@@ -50,7 +50,15 @@ export const colors = {
     },
   },
   border: {
-    light: "#E5E7EB", // gray-200
-    dark: "#374151", // gray-700
+    light: "#E5E7EB",
+    dark: "#374151",
+  },
+  list: {
+    light: {
+      background: "#F9FAFB",
+    },
+    dark: {
+      background: "#1F2937",
+    },
   },
 };

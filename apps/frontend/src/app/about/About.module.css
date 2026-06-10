@@ -1,7 +1,5 @@
 .pageContainer {
   min-height: 100vh;
-  background-color: rgb(17, 24, 39);
-  color: white;
   padding: 2rem 1rem;
 }
 
@@ -16,7 +14,6 @@
   font-weight: bold;
   text-align: center;
   margin-bottom: 3rem;
-  color: white;
 }
 
 .teamGrid {
@@ -28,18 +25,20 @@
 }
 
 .teamMember {
-  background-color: rgba(30, 41, 59, 0.5);
   border-radius: 1rem;
   padding: 2rem;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--card));
 }
 
 .teamMember:hover {
   transform: translateY(-5px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
 }
 
 .avatar {
@@ -48,6 +47,7 @@
   border-radius: 50%;
   overflow: hidden;
   margin-bottom: 1.5rem;
+  border: 3px solid hsl(var(--border));
 }
 
 .avatarImage {
@@ -60,46 +60,49 @@
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: white;
+  color: hsl(var(--foreground));
 }
 
 .role {
   font-size: 1rem;
-  color: rgb(156, 163, 175);
+  color: hsl(var(--muted-foreground));
   margin-bottom: 1rem;
+  font-weight: 500;
 }
 
 .description {
-  color: rgb(209, 213, 219);
+  color: hsl(var(--muted-foreground));
   margin-bottom: 1.5rem;
-  line-height: 1.5;
+  line-height: 1.6;
+  font-size: 0.95rem;
 }
 
 .githubLink {
-  background-color: rgb(31, 41, 55);
   color: white;
   padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
+  border-radius: 9999px;
   text-decoration: none;
-  transition: background-color 0.2s ease;
+  font-weight: 500;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: inline-block;
 }
 
 .githubLink:hover {
-  background-color: rgb(55, 65, 81);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 @media (max-width: 768px) {
   .teamGrid {
     grid-template-columns: 1fr;
   }
-  
+
   .container {
     padding: 1rem;
   }
-  
+
   .title {
     font-size: 2rem;
     margin-bottom: 2rem;
   }
 }
-

@@ -1,14 +1,49 @@
-FROM node:22-bookworm-slim
-
+FROM node:22-bookworm-slim AS base
 WORKDIR /app
-
 ENV NEXT_TELEMETRY_DISABLED=1
 
+FROM base AS deps
 COPY package*.json ./
 RUN npm ci --legacy-peer-deps
 
+FROM base AS builder
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-EXPOSE 3000
+ARG NEXT_PUBLIC_API_BASE_URL
+ARG NEXT_PUBLIC_KEYCLOAK_URL
+ARG NEXT_PUBLIC_KEYCLOAK_REALM
+ARG NEXT_PUBLIC_KEYCLOAK_CLIENT_ID
+ARG NEXT_PUBLIC_MAP_WS_URL
+ARG NEXT_PUBLIC_BACKEND_URL
+ARG NEXT_PUBLIC_RAG_BASE_URL
+ARG NEXT_PUBLIC_GEMINI_API_KEY
+ARG NEXT_PUBLIC_IMAGE_LABELING_API_KEY
+ARG NEXT_PUBLIC_AGORA_APP_ID
+ARG NEXT_PUBLIC_ZEGO_APP_ID
+ARG NEXT_PUBLIC_ZEGO_SERVER_SECRET
+ARG NEXT_PUBLIC_FIREBASE_API_KEY
+ARG NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+ARG NEXT_PUBLIC_FIREBASE_PROJECT_ID
+ARG NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+ARG NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+ARG NEXT_PUBLIC_FIREBASE_APP_ID
 
-CMD ["npm", "run", "dev", "--", "--hostname", "0.0.0.0"]
+RUN npm run build
+
+FROM base AS runner
+ENV NODE_ENV=production
+
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+EXPOSE 3000
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["node", "server.js"]

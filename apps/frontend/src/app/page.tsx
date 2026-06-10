@@ -66,7 +66,7 @@ export default function Home() {
           </p>
           <div className={styles.heroButtons}>
             <Link
-              href="#"
+              href="/office"
               className={`${styles.heroButton} ${styles.primaryButton}`}
               style={{
                 color:
@@ -81,7 +81,7 @@ export default function Home() {
               Get Started
             </Link>
             <Link
-              href="#"
+              href="/about"
               className={`${styles.heroButton} ${styles.secondaryButton}`}
               style={{
                 color: colors.primary[theme === "dark" ? "dark" : "light"],
@@ -89,7 +89,7 @@ export default function Home() {
                   colors.primary[theme === "dark" ? "dark" : "light"],
               }}
             >
-              Watch Demo
+              Learn More
             </Link>
           </div>
         </div>
@@ -173,7 +173,7 @@ export default function Home() {
         </p>
         <div className={styles.ctaButtons}>
           <Link
-            href="#"
+            href="/office"
             className={styles.ctaButton}
             style={{
               color:
@@ -185,10 +185,10 @@ export default function Home() {
               }, ${colors.secondary[theme === "dark" ? "dark" : "light"]})`,
             }}
           >
-            Start Free Trial
+            Enter Your Office
           </Link>
           <Link
-            href="#"
+            href="/about"
             className={styles.ctaButton}
             style={{
               color: colors.primary[theme === "dark" ? "dark" : "light"],
@@ -197,7 +197,7 @@ export default function Home() {
               borderStyle: "solid",
             }}
           >
-            Schedule Demo
+            Meet the Team
           </Link>
         </div>
       </section>

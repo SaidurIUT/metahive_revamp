@@ -40,6 +40,7 @@ export interface Todo {
 interface UpdateCardPositionData {
   listId: string;
   order: number;
+  boardId?: string;
 }
 
 export interface CreateCardData {

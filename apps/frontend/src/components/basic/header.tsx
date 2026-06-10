@@ -4,7 +4,7 @@ import { useTheme } from "next-themes";
 import { Moon, Sun, User, Menu } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import styles from "./styles/Header.module.css";
-import { colors } from "@/components/theme/colors";
+import { colors } from "@/components/colors";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { LoginButton } from "@/components/auth/LoginButton";
 import { LogoutButton } from "@/components/auth/LogoutButton";

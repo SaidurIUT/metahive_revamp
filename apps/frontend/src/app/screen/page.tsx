@@ -23,15 +23,10 @@ interface TextResponse {
 
 declare global {
   interface Window {
-    ImageCapture?: typeof ImageCapture;
-  }
-
-  // Changed 'var' to 'const' in the global interface
-  const ImageCapture: {
-    new (track: MediaStreamTrack): {
+    ImageCapture?: new (track: MediaStreamTrack) => {
       grabFrame(): Promise<ImageBitmap>;
     };
-  };
+  }
 }
 
 const Page: React.FC = () => {
@@ -51,8 +46,10 @@ const Page: React.FC = () => {
   );
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const workNow = "image processing frontend code"; // Current work
-  const officeId = "5a9afb0a-af63-4413-bb95-25b981957c00"; // Office ID
+  const workNow = "image processing frontend code";
+  const officeId = typeof window !== "undefined"
+    ? new URLSearchParams(window.location.search).get("officeId") ?? ""
+    : "";
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -123,7 +120,6 @@ const Page: React.FC = () => {
     if (!labelingData || !textData) return null;
 
     try {
-      const apiKeyGemini = "AIzaSyC6WC7v6rYTZmKXe6uLyWo86xSb76vJqY8";
       const prompt = `Labeling Data: ${JSON.stringify(
         labelingData
       )}\nExtracted Text: ${
@@ -131,7 +127,7 @@ const Page: React.FC = () => {
       }\nWhat is the user trying to do? Provide a 3-line summary.`;
 
       const response = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKeyGemini}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.NEXT_PUBLIC_GEMINI_API_KEY}`,
         {
           contents: [{ parts: [{ text: prompt }] }],
         }
@@ -154,11 +150,10 @@ const Page: React.FC = () => {
     geminiOutput: string
   ): Promise<string | null> => {
     try {
-      const apiKeyGemini = "AIzaSyC6WC7v6rYTZmKXe6uLyWo86xSb76vJqY8";
       const prompt = `Current Work: ${workNow}\nGemini Output: ${geminiOutput}\nCompare whether they are almost similar type of task , If the similarity is almost 20% then return true or false .I will store it in database as boolean just return true or false. Never give any other response than true or false.It will directly store in database.`;
 
       const response = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKeyGemini}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.NEXT_PUBLIC_GEMINI_API_KEY}`,
         {
           contents: [{ parts: [{ text: prompt }] }],
         }
@@ -196,7 +191,7 @@ const Page: React.FC = () => {
       labelingFormData.append("image", selectedImage);
 
       const myHeaders = new Headers();
-      myHeaders.append("apikey", "v5OivDY0xluMAYwI0mCySzaPcOItUVR8");
+      myHeaders.append("apikey", process.env.NEXT_PUBLIC_IMAGE_LABELING_API_KEY ?? "");
 
       const labelingRequestOptions: RequestInit = {
         method: "POST",

@@ -2,7 +2,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { colors } from "@/components/theme/colors";
+import { colors } from "@/components/colors";
 import styles from "@/app/styles/Layout.module.css";
 import { useEffect } from "react";
 

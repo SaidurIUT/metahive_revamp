@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Keep your existing image config
+  output: "standalone",
+
   images: {
     remotePatterns: [
       {

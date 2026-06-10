@@ -16,11 +16,11 @@ import org.springframework.web.context.request.WebRequest;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponsee> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
+    public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
         log.error("Resource not found: {}", ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(ErrorResponsee.of(
+                .body(ErrorResponse.of(
                         HttpStatus.NOT_FOUND.value(),
                         "Not Found",
                         ex.getMessage(),
@@ -29,11 +29,11 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ServiceException.class)
-    public ResponseEntity<ErrorResponsee> handleServiceException(ServiceException ex, WebRequest request) {
+    public ResponseEntity<ErrorResponse> handleServiceException(ServiceException ex, WebRequest request) {
         log.error("Service exception: {}", ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(ErrorResponsee.of(
+                .body(ErrorResponse.of(
                         HttpStatus.BAD_REQUEST.value(),
                         "Bad Request",
                         ex.getMessage(),
@@ -42,11 +42,11 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponsee> handleGeneralException(Exception ex, WebRequest request) {
+    public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex, WebRequest request) {
         log.error("Unexpected error: {}", ex.getMessage(), ex);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ErrorResponsee.of(
+                .body(ErrorResponse.of(
                         HttpStatus.INTERNAL_SERVER_ERROR.value(),
                         "Internal Server Error",
                         ex.getMessage(),

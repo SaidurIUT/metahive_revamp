@@ -4,11 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 
-interface ThemeStyles {
-  backgroundColor?: string;
-  color?: string;
-  borderColor?: string;
-}
+type ThemeStyles = React.CSSProperties;
 
 interface FloatingChatButtonProps {
   onSendChat: () => void;

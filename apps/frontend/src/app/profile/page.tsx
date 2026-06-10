@@ -54,7 +54,9 @@ export default function ProfilePage() {
   const [token, setToken] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
-  const officeId = "5a9afb0a-af63-4413-bb95-25b981957c00";
+  const officeId = typeof window !== "undefined"
+    ? new URLSearchParams(window.location.search).get("officeId") ?? ""
+    : "";
 
   useEffect(() => {
     if (!isAuthenticated) {

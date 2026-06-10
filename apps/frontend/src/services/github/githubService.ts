@@ -211,7 +211,6 @@ export const githubService = {
   optionId: string
 // The return type annotation needs to change too (see step 2)
 ): Promise<GitHubUpdateItemFieldValueResult | null> {
-  console.log("Sending update to GitHub:", { projectId, itemId, fieldId, optionId });
   try {
       // The fetch call itself remains the same, but the expected response shape changes
       const data = await fetchGitHubGraphQL<GitHubUpdateItemFieldValueResult>(

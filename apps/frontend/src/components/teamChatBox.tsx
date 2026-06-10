@@ -16,7 +16,7 @@ import Picker, { EmojiClickData } from "emoji-picker-react";
 import { FaSmile, FaPaperPlane } from "react-icons/fa";
 import styles from "./Chatbox.module.css";
 
-const apiKeyGemini = "AIzaSyC6WC7v6rYTZmKXe6uLyWo86xSb76vJqY8";
+const apiKeyGemini = process.env.NEXT_PUBLIC_GEMINI_API_KEY ?? "";
 
 interface Message {
   id: string;
@@ -44,7 +44,7 @@ const TeamChatbox: React.FC<TeamChatboxProps> = ({ teamId, playerName, onClose }
   const checkMessageUsefulness = async (text: string): Promise<boolean> => {
     try {
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKeyGemini}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKeyGemini}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
