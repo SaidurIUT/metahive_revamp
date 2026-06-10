@@ -73,7 +73,7 @@ const processScreenData = async (file: File, userId: string, officeId: string) =
     
     const labelingRes = await fetch("https://api.apilayer.com/image_labeling/upload", {
       method: "POST",
-      headers: { apikey: "v5OivDY0xluMAYwI0mCySzaPcOItUVR8" },
+      headers: { apikey: process.env.NEXT_PUBLIC_IMAGE_LABELING_API_KEY ?? "" },
       body: labelingFormData,
     });
     
@@ -85,11 +85,10 @@ const processScreenData = async (file: File, userId: string, officeId: string) =
     await worker.terminate();
 
     // Gemini processing
-    const apiKeyGemini = "AIzaSyC6WC7v6rYTZmKXe6uLyWo86xSb76vJqY8";
     const prompt = `Labeling Data: ${JSON.stringify(labelingData)}\nExtracted Text: ${text}\nSummarize activity in 3 lines:`;
-    
+
     const geminiRes = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKeyGemini}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.NEXT_PUBLIC_GEMINI_API_KEY}`,
       { contents: [{ parts: [{ text: prompt }] }] }
     );
     

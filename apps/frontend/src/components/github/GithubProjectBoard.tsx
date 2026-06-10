@@ -54,7 +54,7 @@ export default function GitHubProjectBoard() {
             const data = await githubService.getOrganizationProjects();
             setProjects(data);
              if (data.length === 0) {
-                 console.log("No projects found or PAT lacks permissions.");
+                 // console.log("No projects found or PAT lacks permissions.");
             }
         } catch (err: any) {
             console.error("Error fetching GitHub projects:", err);
@@ -76,13 +76,13 @@ export default function GitHubProjectBoard() {
                 githubService.getProjectFields(projectId),
                 githubService.getProjectItems(projectId) // Add pagination later
             ]);
-             console.log("Fetched Fields:", fieldsData); // Debugging
+             // console.log("Fetched Fields:", fieldsData); // Debugging
             const foundStatusField = fieldsData.find(f => f.name?.toLowerCase() === STATUS_FIELD_NAME.toLowerCase());
-             console.log("Status Field Found:", foundStatusField); // Debugging
+             // console.log("Status Field Found:", foundStatusField); // Debugging
 
             setProjectFields(fieldsData);
             setItems(itemsData.items);
-            console.log("Fetched Items:", itemsData.items); // Debugging: Check item structure and fieldValues
+            // console.log("Fetched Items:", itemsData.items); // Debugging: Check item structure and fieldValues
 
         } catch (err: any) {
             console.error(`Error fetching data for project ${projectId}:`, err);
@@ -129,7 +129,7 @@ export default function GitHubProjectBoard() {
 
 
     const groupedItems = useMemo(() => {
-        console.log(`Attempting to group items. Status field found:`, statusField); // Log the identified status field object
+        // console.log(`Attempting to group items. Status field found:`, statusField); // Log the identified status field object
         const grouped: Record<string, GitHubProjectItem[]> = {};
         items.forEach(item => {
             // --- Start Debug Logging ---
@@ -139,10 +139,10 @@ export default function GitHubProjectBoard() {
             );
             const statusName = (statusValueNode as any)?.name || DEFAULT_STATUS_COLUMN;
     
-            console.log(`Item: ${itemTitle} (ID: ${item.id})`);
-            console.log(`  - Looking for Field ID: ${statusField?.id}`);
-            console.log(`  - Found Status Node:`, statusValueNode); // See the raw node object
-            console.log(`  - Extracted Status Name: ${statusName}`);
+            // console.log(`Item: ${itemTitle} (ID: ${item.id})`);
+            // console.log(`  - Looking for Field ID: ${statusField?.id}`);
+            // console.log(`  - Found Status Node:`, statusValueNode); // See the raw node object
+            // console.log(`  - Extracted Status Name: ${statusName}`);
             // --- End Debug Logging ---
     
             if (!grouped[statusName]) {
@@ -160,7 +160,7 @@ export default function GitHubProjectBoard() {
         }
          if (!grouped[DEFAULT_STATUS_COLUMN]) grouped[DEFAULT_STATUS_COLUMN] = [];
 
-         console.log("Final Grouped Items:", grouped);
+         // console.log("Final Grouped Items:", grouped);
     return grouped;
     }, [items, statusField]);
 
@@ -177,7 +177,7 @@ export default function GitHubProjectBoard() {
         }
 
         const finalOrder = Array.from(orderedSet);
-        console.log("Status Order:", finalOrder); // Debugging
+        // console.log("Status Order:", finalOrder); // Debugging
         return finalOrder;
     }, [statusField, groupedItems]);
 
@@ -192,15 +192,15 @@ export default function GitHubProjectBoard() {
 
         // --- Validation ---
         if (!destination || !selectedProjectId || !statusField) {
-            console.log("Drag cancelled: No destination, project ID, or status field.");
+            // console.log("Drag cancelled: No destination, project ID, or status field.");
             return;
         }
         if (destination.droppableId === source.droppableId && destination.index === source.index) {
-             console.log("Drag cancelled: Item dropped in the same place.");
+             // console.log("Drag cancelled: Item dropped in the same place.");
             return; // Dropped in the same place
         }
         if (type !== 'github-card') {
-             console.log("Drag cancelled: Not a github-card type.");
+             // console.log("Drag cancelled: Not a github-card type.");
              return; // Only handle card drags for now
         }
 
@@ -215,7 +215,7 @@ export default function GitHubProjectBoard() {
             return;
         }
 
-         console.log(`Processing drag: Item ${itemId} to Status '${destinationStatusName}' (Option ID: ${targetOptionId}, Field ID: ${statusField.id})`);
+         // console.log(`Processing drag: Item ${itemId} to Status '${destinationStatusName}' (Option ID: ${targetOptionId}, Field ID: ${statusField.id})`);
 
         // --- Optimistic UI Update ---
         const itemIndex = items.findIndex(i => i.id === itemId);

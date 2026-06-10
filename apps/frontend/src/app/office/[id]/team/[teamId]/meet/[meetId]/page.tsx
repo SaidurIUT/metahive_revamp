@@ -1,7 +1,6 @@
-// src/app/office/[id]/team/[teamId]/meet/[meetId]/page.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, notFound } from "next/navigation";
 import { meetingService, Meeting } from "@/services/office/meetingService";
 import {
@@ -11,7 +10,6 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { format } from "date-fns";
-import { ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
 import BanglishSpeechToText from "@/components/BanglishSpeechToText";
 import { RAG_BASE_URL } from "@/services/ragConfig";
 
@@ -21,7 +19,6 @@ type TranscriptData = {
 };
 
 export default function MeetingDetailsPage() {
-  // read dynamic meetId from the URL
   const { meetId } = useParams() as { meetId: string };
 
   const [meeting, setMeeting] = useState<Meeting | null>(null);
@@ -33,16 +30,15 @@ export default function MeetingDetailsPage() {
     original: [],
     banglish: [],
   });
+  const zegoRef = useRef<any>(null);
 
-  // fetch meeting details
   useEffect(() => {
     const fetchMeeting = async () => {
       setIsLoading(true);
       try {
         const data = await meetingService.getMeeting(meetId);
         setMeeting(data);
-      } catch (err) {
-        console.error(err);
+      } catch {
         setError("Failed to fetch meeting details");
       } finally {
         setIsLoading(false);
@@ -51,23 +47,15 @@ export default function MeetingDetailsPage() {
     fetchMeeting();
   }, [meetId]);
 
-  if (isLoading) {
-    return <div className="p-4 text-center">Loading meeting details…</div>;
-  }
-  if (error) {
-    return <div className="p-4 text-red-500">{error}</div>;
-  }
-  if (!meeting) {
-    notFound();
-    return null;
-  }
-
-  // handlers for opening/closing the Zego meeting
   useEffect(() => {
     if (!isMeetingOpen) return;
-    const startZego = async (el: HTMLElement) => {
-      const appID = 1663462841;
-      const serverSecret = "33417d37debacea40aa12085503a1f4d";
+    const container = document.getElementById("meeting-container");
+    if (!container) return;
+
+    const startZego = async () => {
+      const { ZegoUIKitPrebuilt } = await import("@zegocloud/zego-uikit-prebuilt");
+      const appID = Number(process.env.NEXT_PUBLIC_ZEGO_APP_ID);
+      const serverSecret = process.env.NEXT_PUBLIC_ZEGO_SERVER_SECRET ?? "";
       const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
         appID,
         serverSecret,
@@ -76,8 +64,9 @@ export default function MeetingDetailsPage() {
         "720"
       );
       const zp = ZegoUIKitPrebuilt.create(kitToken);
+      zegoRef.current = zp;
       zp.joinRoom({
-        container: el,
+        container,
         sharedLinks: [
           {
             name: "Shareable link",
@@ -89,8 +78,14 @@ export default function MeetingDetailsPage() {
       });
     };
 
-    const container = document.getElementById("meeting-container");
-    if (container) startZego(container).catch(console.error);
+    startZego().catch(console.error);
+
+    return () => {
+      if (zegoRef.current) {
+        zegoRef.current.destroy();
+        zegoRef.current = null;
+      }
+    };
   }, [isMeetingOpen, meetId]);
 
   const handleStart = () => setIsMeetingOpen(true);
@@ -114,11 +109,25 @@ export default function MeetingDetailsPage() {
         body: JSON.stringify({ context: transcript }),
       });
       if (!res.ok) throw new Error("Save failed");
-      console.log("Transcript saved:", await res.json());
     } catch (err) {
       console.error("Error saving transcript:", err);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+      </div>
+    );
+  }
+  if (error) {
+    return <div className="p-4 text-red-500 text-center">{error}</div>;
+  }
+  if (!meeting) {
+    notFound();
+    return null;
+  }
 
   return (
     <div className="container mx-auto p-4">
@@ -142,11 +151,11 @@ export default function MeetingDetailsPage() {
         </CardContent>
       </Card>
 
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
         {!isMeetingOpen ? (
           <button
             onClick={handleStart}
-            className="bg-blue-500 text-white px-6 py-3 rounded-lg mb-4"
+            className="bg-blue-500 text-white px-6 py-3 rounded-lg mb-4 hover:bg-blue-600 transition-colors"
           >
             Start Meeting
           </button>
@@ -158,14 +167,14 @@ export default function MeetingDetailsPage() {
             />
             <button
               onClick={handleClose}
-              className="bg-red-500 text-white px-4 py-2 rounded"
+              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
             >
               Close Meeting
             </button>
           </>
         )}
 
-        <div className="w-full max-w-4xl mt-8 bg-white p-4 rounded shadow">
+        <div className="w-full max-w-4xl mt-8 bg-white dark:bg-gray-800 p-4 rounded shadow">
           <h2 className="text-xl font-bold mb-4">Speech-to-Text</h2>
           <BanglishSpeechToText
             isListening={isListening}
@@ -176,14 +185,14 @@ export default function MeetingDetailsPage() {
             {!isListening ? (
               <button
                 onClick={() => setIsListening(true)}
-                className="bg-green-500 text-white px-4 py-2 rounded"
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"
               >
                 Start Transcription
               </button>
             ) : (
               <button
                 onClick={() => setIsListening(false)}
-                className="bg-red-500 text-white px-4 py-2 rounded"
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
               >
                 Stop Transcription
               </button>
@@ -192,7 +201,7 @@ export default function MeetingDetailsPage() {
 
           <div className="mt-4">
             <h3 className="font-semibold">Transcript</h3>
-            <div className="bg-gray-100 p-4 rounded">
+            <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded">
               {transcripts.original.map((t, i) => (
                 <p key={i}>{t}</p>
               ))}

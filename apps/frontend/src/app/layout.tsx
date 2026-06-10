@@ -13,7 +13,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   title: "MetaHive",
-  description: "A dummy project with dark and light mode",
+  description: "A multiplayer virtual office platform for remote teams — immersive workspaces, real-time collaboration, and gamified productivity.",
 };
 
 export default function RootLayout({

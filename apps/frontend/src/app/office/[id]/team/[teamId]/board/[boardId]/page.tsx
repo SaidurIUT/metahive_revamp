@@ -39,7 +39,8 @@ interface LocalList extends BoardList {
 export default function BoardPage() {
   const params = useParams();
   const boardId = params?.boardId as string;
-  const teamId = params?.teamId as string; // Make sure teamId is available if needed by CardDialog
+  const teamId = params?.teamId as string;
+  const officeId = params?.id as string;
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
@@ -300,11 +301,12 @@ export default function BoardPage() {
                       {localLists.map((list, index) => (
                         <Draggable key={list.id} draggableId={list.id} index={index}>
                           {(provided) => (
-                            <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                            <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} style={provided.draggableProps.style as React.CSSProperties}>
                               <List
                                 list={list}
                                 boardId={boardId}
-                                cards={list.cards || []} // Ensure cards is an array
+                                officeId={officeId}
+                                cards={list.cards || []}
                                 onCardsUpdate={loadLocalBoardData}
                                 onCardClick={handleCardClick}
                                 // Add onListDelete logic if implemented in List component

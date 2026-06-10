@@ -2,7 +2,7 @@
 
 import { useTheme } from "next-themes";
 import Link from "next/link";
-import { colors } from "@/components/theme/colors";
+import { colors } from "@/components/colors";
 import styles from "./styles/Footer.module.css";
 
 export default function Footer() {
@@ -32,7 +32,7 @@ export default function Footer() {
           </Link>
         </div>
         <p className={styles.copyright}>
-          &copy; 2025 MetaHive. All rights reserved.
+          &copy; {new Date().getFullYear()} MetaHive. All rights reserved.
         </p>
       </div>
     </footer>

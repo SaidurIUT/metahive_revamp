@@ -28,7 +28,7 @@ import styles from "./GameCanvas.module.css";
 // Instead of "ScreenShareModal", we now import "RemoteVideoModal"
 import RemoteVideoModal from "./RemoteVideoModal";
 
-const AGORA_APP_ID = "aa57b40426c74add85bb5dcae4557ef6";
+const AGORA_APP_ID = process.env.NEXT_PUBLIC_AGORA_APP_ID ?? "";
 
 function GameCanvas({ playerName, roomId }) {
   const canvasRef = useRef(null);

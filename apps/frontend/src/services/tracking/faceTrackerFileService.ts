@@ -53,7 +53,7 @@ export const faceTrackerFileService = {
 
       return {
         blob: response.data,
-        contentType: response.headers["content-type"] || "image/jpeg",
+        contentType: String(response.headers["content-type"] || "image/jpeg"),
       };
     } catch (error) {
       throw new Error("Failed to fetch captured image: " + error);

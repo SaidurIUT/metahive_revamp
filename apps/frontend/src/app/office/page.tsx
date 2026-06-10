@@ -148,7 +148,7 @@ export default function OfficePage() {
           role="button"
           aria-label="Create New Office"
           tabIndex={0}
-          onKeyPress={(e) => {
+          onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") openModal();
           }}
         >

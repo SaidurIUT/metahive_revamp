@@ -11,15 +11,9 @@ const cors = require("cors");
 // Load environment variables
 dotenv.config();
 
-// Debugging: Log MONGODB_URI to verify it's loaded
-console.log("MONGODB_URI:", process.env.MONGODB_URI);
-
 // Connect to MongoDB
 mongoose
-  .connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.MONGODB_URI)
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => {
     console.error("Failed to connect to MongoDB", err);
@@ -64,14 +58,7 @@ app.get("/", (req, res) => {
 
 // Send Message endpoint
 app.post("/send-message", async (req, res) => {
-  console.log("Received /send-message request:", req.body); // Log the entire body
-
   const { username, message, channelId } = req.body;
-
-  console.log("Extracted Fields:");
-  console.log("username:", username);
-  console.log("message:", message);
-  console.log("channelId:", channelId);
 
   // Validate required fields
   if (!username || !message || !channelId) {

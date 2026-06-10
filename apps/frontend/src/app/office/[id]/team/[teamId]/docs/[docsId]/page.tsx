@@ -42,7 +42,7 @@ export default function DocDetailsPage() {
   const { theme } = useTheme();
   const params = useParams();
   const router = useRouter();
-  const apiKeyGemini = "AIzaSyC6WC7v6rYTZmKXe6uLyWo86xSb76vJqY8";
+  const apiKeyGemini = process.env.NEXT_PUBLIC_GEMINI_API_KEY ?? "";
 
   const officeId = params.id as string;
   const teamId = params.teamId as string;
@@ -188,7 +188,6 @@ export default function DocDetailsPage() {
           context: content,
         }
       );
-      console.log(response.data);
     } catch (error) {
       console.error("Error saving context to Flask:", error);
       // Optionally, set an error state or notify the user
@@ -369,7 +368,7 @@ export default function DocDetailsPage() {
     try {
       const prompt = getPromptForOption(option, selectedText);
       const response = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKeyGemini}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKeyGemini}`,
         {
           contents: [{ parts: [{ text: prompt }] }],
         }

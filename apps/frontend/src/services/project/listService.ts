@@ -41,7 +41,7 @@ export const listService = {
     await privateAxios.delete(`/pm/v1/lists/${id}`);
   },
 
-  reorderLists: async (lists: BoardList[]): Promise<void> => {
+  reorderLists: async (lists: Pick<BoardList, "id" | "order">[]): Promise<void> => {
     await privateAxios.put("/pm/v1/lists/reorder", lists);
   },
 

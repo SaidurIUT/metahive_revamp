@@ -12,20 +12,20 @@ export default function AboutUs() {
   const teamMembers = [
     {
       name: "Nafis Fuad Shahid",
-      role: "Developer",
-      description: "Likes chicken over beef",
+      role: "Full-Stack Developer",
+      description: "Leads architecture and frontend development. Passionate about building immersive multiplayer experiences.",
       github: "https://github.com/NafisFuadShahid"
     },
     {
       name: "MD Saidur Rahman",
-      role: "Developer",
-      description: "Complains about everything",
+      role: "Backend Developer",
+      description: "Drives backend services and API design. Focused on scalable microservice architecture and system reliability.",
       github: "https://github.com/SaidurIUT"
     },
     {
       name: "Md Abdul Muqtadir",
-      role: "Developer",
-      description: "Wants to get married soon",
+      role: "ML & Integration Developer",
+      description: "Powers the AI and integration layer. Specializes in RAG pipelines, real-time communication, and bot services.",
       github: "https://github.com/phigratio"
     }
   ];
@@ -33,7 +33,19 @@ export default function AboutUs() {
   return (
     <div className={styles.pageContainer}>
       <div className={styles.container}>
-        <h1 className={styles.title}>Our Team</h1>
+        <h1
+          className={styles.title}
+          style={{
+            backgroundImage: `linear-gradient(to right, ${
+              colors.primary[theme === "dark" ? "dark" : "light"]
+            }, ${colors.secondary[theme === "dark" ? "dark" : "light"]})`,
+            backgroundClip: "text",
+            WebkitBackgroundClip: "text",
+            color: "transparent",
+          }}
+        >
+          Meet the Team
+        </h1>
         <div className={styles.teamGrid}>
           {teamMembers.map((member, index) => (
             <div key={index} className={styles.teamMember}>
