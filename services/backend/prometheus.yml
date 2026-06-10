@@ -1,0 +1,41 @@
+global:
+  scrape_interval: 15s # Default scrape interval
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Job to scrape Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['prometheus:9090'] # Use container name
+
+  # Job to scrape the OpenTelemetry Collector's metrics
+  - job_name: 'otel-collector'
+    static_configs:
+      - targets: ['otel-collector:9091'] # Target the collector's prometheus exporter port
+
+  # Job to scrape Project Manager App (Spring Boot Actuator)
+  - job_name: 'project-manager'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['project-manager:9087']
+
+  # Job to scrape API Gateway App (Assuming Spring Boot Actuator)
+  - job_name: 'api-gateway'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['api-gateway:9000']
+    basic_auth:
+      username: 'user'
+      password: 'password'
+  - job_name: 'user-service'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [ 'user-service:8082' ]
+  - job_name: 'doc-server'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [ 'doc-service:8083' ]
+  - job_name: 'office-service'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [ 'office-service:8080' ]

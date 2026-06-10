@@ -1,0 +1,8 @@
+.gradle
+build
+**/build
+**/target
+**/.env
+**/.env.*
+**/.DS_Store
+**/volume-data

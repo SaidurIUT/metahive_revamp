@@ -1,0 +1,77 @@
+name: SonarCloud Analysis
+
+on:
+  push:
+    branches:
+      - main # Analyze commits pushed to main
+  pull_request:
+    types: [opened, synchronize, reopened] # Analyze pull requests
+
+permissions:
+  contents: read
+  pull-requests: read # Allow reading PR details
+
+jobs:
+  build-and-analyze:
+    name: Build, Test, and Analyze
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Crucial for SonarCloud branch/PR analysis
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Make gradlew executable
+        run: chmod +x services/backend/gradlew
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('services/backend/**/build.gradle', 'services/backend/**/settings.gradle', 'services/backend/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Build, Run Tests and Generate JaCoCo Reports
+        working-directory: ./services/backend
+        run: ./gradlew build jacocoAggregateReport --continue --info
+      - name: Upload Test Reports
+        # Always upload reports, especially on failure, to see what went wrong
+        if: always() # Run this even if previous steps fail
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-${{ github.run_id }} # Unique name per run
+          path: |
+            services/backend/*/build/reports/tests/test/
+            services/backend/build/reports/problems/
+          retention-days: 7 # Keep reports for 7 days
+
+      - name: SonarCloud Scan
+        # Run even if the build step had test failures
+        if: success() || failure()
+        uses: SonarSource/sonarcloud-github-action@v2.2.0
+        with:
+          # Set the base directory for the Sonar analysis
+          projectBaseDir: services/backend
+          # Define all properties in command line args similar to Maven example
+          args: >
+            -Dsonar.projectKey=Learnathon-By-Geeky-Solutions_code-warriors-
+            -Dsonar.organization=learnathon-by-geeky-solutions
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.sourceEncoding=UTF-8
+            -Dsonar.java.source=21
+            -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/aggregate/jacoco.xml
+            -Dsonar.coverage.exclusions=**/config/**,**/exception/**,**/model/**,**/dto/**,**/*Application*
+           
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
