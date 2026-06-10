@@ -1,4 +1,3 @@
-// GameCanvas.jsx
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import kaboom from "kaboom";
@@ -25,10 +24,16 @@ import {
 } from "react-icons/fa";
 import styles from "./GameCanvas.module.css";
 
-// Instead of "ScreenShareModal", we now import "RemoteVideoModal"
+import AvatarSelectionModal from "./AvatarSelectionModal";
 import RemoteVideoModal from "./RemoteVideoModal";
 
-const AGORA_APP_ID = process.env.NEXT_PUBLIC_AGORA_APP_ID ?? "";
+const AGORA_APP_ID = process.env.NEXT_PUBLIC_AGORA_APP_ID;
+
+const AVATAR_OPTIONS = [
+  { id: "ash", label: "Ash", src: "/ash.png" },
+  { id: "ash1", label: "Ash 1", src: "/ash1.png" },
+  { id: "ash2", label: "Ash 2", src: "/ash2.png" },
+];
 
 function GameCanvas({ playerName, roomId }) {
   const canvasRef = useRef(null);
@@ -64,8 +69,16 @@ function GameCanvas({ playerName, roomId }) {
   const [isDiscordOpen, setIsDiscordOpen] = useState(false);
   const [selectedDiscordChannel, setSelectedDiscordChannel] = useState(null);
 
+  const [selectedAvatar, setSelectedAvatar] = useState(null);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(true);
+
   const openDiscord = () => setIsDiscordOpen(true);
   const closeDiscord = () => setIsDiscordOpen(false);
+
+  const handleSelectAvatar = (avatarId) => {
+    setSelectedAvatar(avatarId);
+    setIsAvatarModalOpen(false);
+  };
 
   // --------------- NEW: The UID of the remote feed we want to "zoom" ---------------
   const [zoomUid, setZoomUid] = useState(null);
@@ -86,6 +99,8 @@ function GameCanvas({ playerName, roomId }) {
   // ---------- Kaboom Setup ----------
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (!selectedAvatar) return;
+
     const k = kaboom({
       global: false,
       width: 800,
@@ -101,7 +116,7 @@ function GameCanvas({ playerName, roomId }) {
     gameRef.current = k;
 
     // Load Sprites
-    k.loadSprite("player", "/ash.png", {
+    k.loadSprite("player", `/${selectedAvatar}.png`, {
       sliceX: 52,
       sliceY: 1,
       anims: {
@@ -524,7 +539,7 @@ function GameCanvas({ playerName, roomId }) {
         }
       }
     };
-  }, [playerName, roomId]);
+  }, [playerName, roomId, selectedAvatar]);
 
   // ---------- Toggling Chat, Camera, Mic, Screen Share, Discord ----------
   const openChat = () => setIsChatOpen(true);
@@ -680,6 +695,10 @@ function GameCanvas({ playerName, roomId }) {
           selectedChannel={selectedDiscordChannel}
           onClose={closeDiscord}
         />
+      )}
+
+      {isAvatarModalOpen && (
+        <AvatarSelectionModal avatars={AVATAR_OPTIONS} onSelect={handleSelectAvatar} />
       )}
 
       {/* RemoteVideoModal => "zoom" the feed for user with uid=zoomUid */}

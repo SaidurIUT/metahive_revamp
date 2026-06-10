@@ -90,6 +90,9 @@ dependencies {
     // Add Kotlin dependency for consistency with working example
     testImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8" // <<< ADDED
 
+    // adding new dependencies for fixing the build error
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+
 }
 
 // Keep existing test and jacoco configurations
