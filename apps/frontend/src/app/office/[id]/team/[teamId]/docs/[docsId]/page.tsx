@@ -3,10 +3,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import FloatingChatButton from "@/components/aichatbot";
 import { useTheme } from "next-themes";
-import { useParams, notFound, useRouter } from "next/navigation";
-import { Plus, Settings, Cat } from "lucide-react"; // Imported Chat icon
+import { useParams, notFound } from "next/navigation";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TextAlign from "@tiptap/extension-text-align";
@@ -17,7 +15,6 @@ import FontFamily from "@tiptap/extension-font-family";
 import { teamService, Team } from "@/services/office/teamService";
 import docsService from "@/services/docsService";
 import { colors } from "@/components/colors";
-import DocItem from "@/components/doc/DocItem";
 import { DocsDTO } from "@/types/DocsDTO";
 import { ThemeWrapper } from "@/components/basic/theme-wrapper";
 import { MenuBar } from "@/components/ui/editor/menu-bar";
@@ -29,10 +26,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 
 import axios from "axios";
 import FloatingChat from "@/components/FloatingChatBot";
@@ -41,21 +35,15 @@ import { RAG_BASE_URL } from "@/services/ragConfig";
 export default function DocDetailsPage() {
   const { theme } = useTheme();
   const params = useParams();
-  const router = useRouter();
   const apiKeyGemini = "AIzaSyC6WC7v6rYTZmKXe6uLyWo86xSb76vJqY8";
 
-  const officeId = params.id as string;
   const teamId = params.teamId as string;
   const docsId = params.docsId as string;
 
-  // States for team, docs, doc
+  // States for team and doc
   const [team, setTeam] = useState<Team | null>(null);
   const [teamLoading, setTeamLoading] = useState<boolean>(true);
   const [teamError, setTeamError] = useState<string | null>(null);
-
-  const [docs, setDocs] = useState<DocsDTO[]>([]);
-  const [docsLoading, setDocsLoading] = useState<boolean>(true);
-  const [docsError, setDocsError] = useState<string | null>(null);
 
   const [doc, setDoc] = useState<DocsDTO | null>(null);
   const [docLoading, setDocLoading] = useState<boolean>(true);
@@ -63,16 +51,10 @@ export default function DocDetailsPage() {
 
   // Additional states for document logic
   const [title, setTitle] = useState("");
-  const [isAddChildOpen, setIsAddChildOpen] = useState(false);
-  const [newChildDocTitle, setNewChildDocTitle] = useState("");
-  const [newChildDocContent, setNewChildDocContent] = useState("");
-
-  const [leftSidebarOpen, setLeftSidebarOpen] = useState(false);
-  const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
 
   // Chatbot states
   const [grandparentId, setGrandparentId] = useState<string | null>(null);
-  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  const [isChatbotOpen, setIsChatbotOpen] = useState(true);
   const [chatInput, setChatInput] = useState("");
   const [chatResponse, setChatResponse] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
@@ -138,23 +120,6 @@ export default function DocDetailsPage() {
       }
     };
     fetchTeam();
-  }, [teamId]);
-
-  // Fetch the docs (root docs)
-  useEffect(() => {
-    const fetchDocs = async () => {
-      try {
-        const allDocs = await docsService.getDocsByTeamId(teamId);
-        const rootDocs = allDocs.filter((d) => !d.parentId);
-        setDocs(rootDocs);
-      } catch (err) {
-        console.error(err);
-        setDocsError("Failed to fetch documents.");
-      } finally {
-        setDocsLoading(false);
-      }
-    };
-    fetchDocs();
   }, [teamId]);
 
   // Fetch the specific doc by ID
@@ -239,53 +204,6 @@ export default function DocDetailsPage() {
     }
   };
 
-  // Create a new child doc
-  const handleCreateChildDoc = async () => {
-    try {
-      const newDoc = await docsService.createDoc({
-        teamId,
-        officeId,
-        parentId: doc?.id || null,
-        title: newChildDocTitle,
-        content: newChildDocContent,
-        level: (doc?.level || 0) + 1,
-      });
-
-      if (doc) {
-        setDoc({
-          ...doc,
-          children: doc.children ? [...doc.children, newDoc] : [newDoc],
-        });
-      }
-
-      setDocs((prevDocs) => {
-        const updatedDocs = prevDocs.map((d) => {
-          if (d.id === newDoc.parentId) {
-            return {
-              ...d,
-              children: d.children ? [...d.children, newDoc] : [newDoc],
-            };
-          }
-          return d;
-        });
-        return updatedDocs;
-      });
-
-      setNewChildDocTitle("");
-      setNewChildDocContent("");
-      setIsAddChildOpen(false);
-
-      router.push(`/office/${officeId}/team/${teamId}/docs/${newDoc.id}`);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to create child document.");
-    }
-  };
-
-  // Toggle sidebars
-  const toggleLeftSidebar = () => setLeftSidebarOpen(!leftSidebarOpen);
-  const toggleRightSidebar = () => setRightSidebarOpen(!rightSidebarOpen);
-
   // Chatbot functions
 
   // Handle sending a query to the Flask backend
@@ -319,25 +237,6 @@ export default function DocDetailsPage() {
     } finally {
       setChatLoading(false);
     }
-  };
-
-  // Handle adding a new child document from DocItem
-  const handleDocAdded = (newDoc: DocsDTO, parentId: string) => {
-    setDocs((prevDocs) => {
-      if (parentId === null) {
-        return [...prevDocs, newDoc];
-      }
-      const updatedDocs = prevDocs.map((d) => {
-        if (d.id === parentId) {
-          return {
-            ...d,
-            children: d.children ? [...d.children, newDoc] : [newDoc],
-          };
-        }
-        return d;
-      });
-      return updatedDocs;
-    });
   };
 
   // Handle 'U' key for prompt options
@@ -468,7 +367,11 @@ export default function DocDetailsPage() {
       <div className={styles.container}>
         {/* Left Sidebar Toggle */}
 
-        <div className={styles.content}>
+        <div
+          className={`${styles.content} ${
+            !isChatbotOpen ? styles.chatCollapsed : ""
+          }`}
+        >
           {/* Main Content */}
           <div className={styles.mainContent}>
             <h1 className={styles.title} style={themeTextStyle}>
@@ -519,6 +422,18 @@ export default function DocDetailsPage() {
               </div>
             </div>
           </div>
+
+          <FloatingChat
+            variant="sidebar"
+            isOpen={isChatbotOpen}
+            onOpenChange={setIsChatbotOpen}
+            onSendChat={handleSendChat}
+            chatInput={chatInput}
+            setChatInput={setChatInput}
+            chatResponse={chatResponse}
+            chatLoading={chatLoading}
+            chatError={chatError}
+          />
         </div>
 
         {/* Prompt Dialog for "Rewrite", "Explain", "Summary", "Grammar" */}
@@ -600,14 +515,6 @@ export default function DocDetailsPage() {
         </Dialog>
       </div>
       <DocumentFileUpload docId={docsId}/>
-      <FloatingChat
-        onSendChat={handleSendChat}
-        chatInput={chatInput}
-        setChatInput={setChatInput}
-        chatResponse={chatResponse}
-        chatLoading={chatLoading}
-        chatError={chatError}
-      />
     </ThemeWrapper>
   );
 }
