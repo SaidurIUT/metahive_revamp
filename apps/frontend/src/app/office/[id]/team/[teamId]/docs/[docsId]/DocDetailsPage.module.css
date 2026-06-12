@@ -11,8 +11,21 @@
 
 .content {
   flex: 1;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+  gap: 1.5rem;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 1560px;
+  min-height: 0;
   margin-top: 1rem;
+  margin-left: auto;
+  margin-right: auto;
+  transition: grid-template-columns 0.2s ease;
+}
+
+.chatCollapsed {
+  grid-template-columns: minmax(0, 1fr) 56px;
 }
 
 /* Sidebars */
@@ -105,11 +118,10 @@
 
 
 .mainContent {
-  flex-grow: 1;
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .docForm {
@@ -256,6 +268,11 @@
 
 /* Responsive */
 @media (max-width: 1200px) {
+  .content,
+  .chatCollapsed {
+    grid-template-columns: 1fr;
+  }
+
   .mainContent {
     margin-left: 0;
     margin-right: 0;
@@ -272,5 +289,4 @@
     max-width: 300px;
   }
 }
-
 
