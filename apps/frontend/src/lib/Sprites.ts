@@ -1,0 +1,60 @@
+export const AVATAR_OPTIONS = [
+  {
+    id: "ash",
+    label: "Boy",
+    src: "/ash.png",
+    thumbnail: {
+      src: "/ash.png",
+      sliceX: 52,
+      sliceY: 1,
+      frameIndex: 18, // idle-down, first frame — facing the player
+    },
+    sprite: {
+      sliceX: 52,
+      sliceY: 1,
+      anims: {
+        "idle-right": { from: 0,  to: 5,  speed: 10, loop: true },
+        "idle-up":    { from: 6,  to: 11, speed: 10, loop: true },
+        "idle-left":  { from: 12, to: 17, speed: 10, loop: true },
+        "idle-down":  { from: 18, to: 23, speed: 10, loop: true },
+        "run-right":  { from: 24, to: 29, speed: 15, loop: true },
+        "run-up":     { from: 30, to: 35, speed: 15, loop: true },
+        "run-left":   { from: 36, to: 41, speed: 15, loop: true },
+        "run-down":   { from: 42, to: 47, speed: 15, loop: true },
+        "sit-down":   { from: 48, to: 48, speed: 1,  loop: false },
+        "sit-up":     { from: 49, to: 49, speed: 1,  loop: false },
+        "sit-left":   { from: 50, to: 50, speed: 1,  loop: false },
+        "sit-right":  { from: 51, to: 51, speed: 1,  loop: false },
+      },
+    },
+  },
+{
+  id: "girl",
+  label: "Girl",
+  src: "/girl.webp",
+  thumbnail: {
+    src: "/girl.webp",
+    sliceX: 4,
+    sliceY: 5,
+    frameIndex: 0,
+  },
+  sprite: {
+    sliceX: 4,
+    sliceY: 5,
+    anims: {
+      "idle-down":  { from: 0,  to: 0,  speed: 8,  loop: true },
+      "idle-left":  { from: 4,  to: 4,  speed: 8,  loop: true },
+      "idle-right": { from: 8,  to: 8,  speed: 8,  loop: true },
+      "idle-up":    { from: 12, to: 12, speed: 8,  loop: true },
+      "run-down":   { from: 0,  to: 3,  speed: 12, loop: true },
+      "run-left":   { from: 4,  to: 7,  speed: 12, loop: true },
+      "run-right":  { from: 8,  to: 11, speed: 12, loop: true },
+      "run-up":     { from: 12, to: 15, speed: 12, loop: true },
+      "sit-down":   { from: 16, to: 16, speed: 1,  loop: false },
+      "sit-up":     { from: 17, to: 17, speed: 1,  loop: false },
+      "sit-left":   { from: 18, to: 18, speed: 1,  loop: false },
+      "sit-right":  { from: 19, to: 19, speed: 1,  loop: false },
+    },
+  },
+},
+];

@@ -14,7 +14,7 @@ function AvatarSelectionModal({ avatars, onSelect }) {
             <button
               key={avatar.id}
               type="button"
-              onClick={() => onSelect(avatar.id)}
+              onClick={() => onSelect(avatar)}
               className="group flex w-full flex-col overflow-hidden rounded-2xl border border-transparent bg-zinc-900 transition hover:-translate-y-1 hover:border-emerald-500/70 focus:outline-none focus:ring-2 focus:ring-emerald-500/70"
             >
               <div className="h-40 w-full overflow-hidden bg-black">

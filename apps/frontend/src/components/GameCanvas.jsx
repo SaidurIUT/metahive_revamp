@@ -26,14 +26,9 @@ import styles from "./GameCanvas.module.css";
 
 import AvatarSelectionModal from "./AvatarSelectionModal";
 import RemoteVideoModal from "./RemoteVideoModal";
+import { AVATAR_OPTIONS } from "@/lib/Sprites";
 
 const AGORA_APP_ID = process.env.NEXT_PUBLIC_AGORA_APP_ID;
-
-const AVATAR_OPTIONS = [
-  { id: "ash", label: "Ash", src: "/ash.png" },
-  { id: "ash1", label: "Ash 1", src: "/ash1.png" },
-  { id: "ash2", label: "Ash 2", src: "/ash2.png" },
-];
 
 function GameCanvas({ playerName, roomId }) {
   const canvasRef = useRef(null);
@@ -75,8 +70,8 @@ function GameCanvas({ playerName, roomId }) {
   const openDiscord = () => setIsDiscordOpen(true);
   const closeDiscord = () => setIsDiscordOpen(false);
 
-  const handleSelectAvatar = (avatarId) => {
-    setSelectedAvatar(avatarId);
+  const handleSelectAvatar = (avatar) => {
+    setSelectedAvatar(avatar);
     setIsAvatarModalOpen(false);
   };
 
@@ -116,24 +111,25 @@ function GameCanvas({ playerName, roomId }) {
     gameRef.current = k;
 
     // Load Sprites
-    k.loadSprite("player", `/${selectedAvatar}.png`, {
-      sliceX: 52,
-      sliceY: 1,
-      anims: {
-        "idle-right": { from: 0, to: 5, speed: 10, loop: true },
-        "idle-up": { from: 6, to: 11, speed: 10, loop: true },
-        "idle-left": { from: 12, to: 17, speed: 10, loop: true },
-        "idle-down": { from: 18, to: 23, speed: 10, loop: true },
-        "run-right": { from: 24, to: 29, speed: 15, loop: true },
-        "run-up": { from: 30, to: 35, speed: 15, loop: true },
-        "run-left": { from: 36, to: 41, speed: 15, loop: true },
-        "run-down": { from: 42, to: 47, speed: 15, loop: true },
-        "sit-down": { from: 48, to: 48, speed: 1, loop: false },
-        "sit-up": { from: 49, to: 49, speed: 1, loop: false },
-        "sit-left": { from: 50, to: 50, speed: 1, loop: false },
-        "sit-right": { from: 51, to: 51, speed: 1, loop: false },
-      },
-    });
+    // k.loadSprite("player", `/${selectedAvatar}.png`, {
+    //   sliceX: 52,
+    //   sliceY: 1,
+    //   anims: {
+    //     "idle-right": { from: 0, to: 5, speed: 10, loop: true },
+    //     "idle-up": { from: 6, to: 11, speed: 10, loop: true },
+    //     "idle-left": { from: 12, to: 17, speed: 10, loop: true },
+    //     "idle-down": { from: 18, to: 23, speed: 10, loop: true },
+    //     "run-right": { from: 24, to: 29, speed: 15, loop: true },
+    //     "run-up": { from: 30, to: 35, speed: 15, loop: true },
+    //     "run-left": { from: 36, to: 41, speed: 15, loop: true },
+    //     "run-down": { from: 42, to: 47, speed: 15, loop: true },
+    //     "sit-down": { from: 48, to: 48, speed: 1, loop: false },
+    //     "sit-up": { from: 49, to: 49, speed: 1, loop: false },
+    //     "sit-left": { from: 50, to: 50, speed: 1, loop: false },
+    //     "sit-right": { from: 51, to: 51, speed: 1, loop: false },
+    //   },
+    // });
+    k.loadSprite("player", selectedAvatar.src, selectedAvatar.sprite);
     k.loadSprite("map", "/mapfinal1.png");
 
     // Start Game (but do NOT spawn local sprite until we see server data)
