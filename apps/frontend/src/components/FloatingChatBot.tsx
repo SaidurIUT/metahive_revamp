@@ -44,6 +44,7 @@ const FloatingChat: React.FC<FloatingChatProps> = ({
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    event.stopPropagation();
     const prompt = chatInput.trim();
 
     if (!prompt || chatLoading) return;
@@ -54,6 +55,8 @@ const FloatingChat: React.FC<FloatingChatProps> = ({
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    event.stopPropagation();
+
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       event.currentTarget.form?.requestSubmit();
@@ -179,6 +182,7 @@ const FloatingChat: React.FC<FloatingChatProps> = ({
 
       <form
         onSubmit={handleSubmit}
+        onKeyDown={(event) => event.stopPropagation()}
         className="shrink-0 border-t border-slate-800 bg-slate-900 p-3"
       >
         <div className="overflow-hidden rounded-md border border-slate-700 bg-slate-950 focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-400">

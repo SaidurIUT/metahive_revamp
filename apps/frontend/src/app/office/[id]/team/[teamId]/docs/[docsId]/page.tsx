@@ -239,9 +239,23 @@ export default function DocDetailsPage() {
     }
   };
 
+  const isTypingTarget = (target: EventTarget | null) => {
+    if (!(target instanceof HTMLElement)) {
+      return false;
+    }
+
+    return Boolean(
+      target.closest("input, textarea, select, button, [contenteditable='true']")
+    );
+  };
+
   // Handle 'U' key for prompt options
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (isTypingTarget(event.target)) {
+        return;
+      }
+
       // Check if user pressed 'U' or 'u'
       if (event.key === "u" || event.key === "U") {
         const selection = window.getSelection()?.toString() || "";
