@@ -32,6 +32,66 @@ import axios from "axios";
 import FloatingChat from "@/components/FloatingChatBot";
 import DocumentFileUpload from "@/components/doc/DocumentFileUploadProps";
 import { RAG_BASE_URL } from "@/services/ragConfig";
+
+interface RagErrorDetails {
+  code?: number;
+  message?: string;
+  status?: string;
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === "object" && value !== null;
+};
+
+const extractRagError = (data: unknown): RagErrorDetails | null => {
+  if (!isRecord(data)) {
+    return null;
+  }
+
+  const source = isRecord(data.error) ? data.error : data;
+  const code = typeof source.code === "number" ? source.code : undefined;
+  const message =
+    typeof source.message === "string" ? source.message : undefined;
+  const status = typeof source.status === "string" ? source.status : undefined;
+
+  if (!code && !message && !status) {
+    return null;
+  }
+
+  return { code, message, status };
+};
+
+const getFriendlyChatError = (
+  errorDetails: RagErrorDetails | null,
+  httpStatus?: number
+) => {
+  const errorCode = errorDetails?.code ?? httpStatus;
+
+  if (errorCode === 503 || errorDetails?.status === "UNAVAILABLE") {
+    return "The AI model is experiencing high demand right now. Please wait a moment and try again.";
+  }
+
+  if (httpStatus && httpStatus >= 500) {
+    return "The AI service is having trouble right now. Please try again in a few moments.";
+  }
+
+  return (
+    errorDetails?.message ||
+    "I couldn't get a response from the assistant. Please try again."
+  );
+};
+
+const getChatErrorMessage = (error: unknown) => {
+  if (axios.isAxiosError(error)) {
+    return getFriendlyChatError(
+      extractRagError(error.response?.data),
+      error.response?.status
+    );
+  }
+
+  return "I couldn't get a response from the assistant. Please try again.";
+};
+
 export default function DocDetailsPage() {
   const { theme } = useTheme();
   const params = useParams();
@@ -228,12 +288,27 @@ export default function DocDetailsPage() {
         }
       );
 
-      // Assuming the Flask app returns the Gemini API response in a 'candidates' array
-      const geminiResponse = response.data.candidates[0].content.parts[0].text;
+      const apiError = extractRagError(response.data);
+
+      if (apiError) {
+        setChatError(getFriendlyChatError(apiError, response.status));
+        return;
+      }
+
+      const geminiResponse =
+        response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (typeof geminiResponse !== "string" || !geminiResponse.trim()) {
+        setChatError(
+          "The assistant returned an empty response. Please try again."
+        );
+        return;
+      }
+
       setChatResponse(geminiResponse);
     } catch (error) {
       console.error("Error communicating with Flask backend:", error);
-      setChatError("Failed to get response from chatbot.");
+      setChatError(getChatErrorMessage(error));
     } finally {
       setChatLoading(false);
     }
