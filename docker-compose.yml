@@ -211,6 +211,7 @@ services:
       context: ./services/rag-service
     environment:
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash}
       RAG_DATA_DIR: /app/data
       RAG_UPLOAD_DIR: /app/uploads
       FLASK_HOST: 0.0.0.0

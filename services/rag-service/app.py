@@ -18,7 +18,8 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 load_dotenv()
 
 api_key = os.getenv('GEMINI_API_KEY') or os.getenv('gemini_api_key')
-url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent"
+gemini_model = os.getenv('GEMINI_MODEL', 'gemini-3.5-flash')
+url = f"https://generativelanguage.googleapis.com/v1beta/models/{gemini_model}:generateContent"
 
 app = Flask(__name__)
 CORS(app)
@@ -176,6 +177,9 @@ def embed_query(query):
     return outputs.last_hidden_state.mean(dim=1).detach().numpy()
 
 def query_gemini(relevant_chunks, query):
+    if not api_key:
+        return {'error': {'message': 'GEMINI_API_KEY is not configured'}}, 500
+
     prompt = f"Context:\n{' '.join(relevant_chunks)}\n\nQuestion: {query}"
     headers = {"Content-Type": "application/json"}
     payload = {
@@ -184,8 +188,11 @@ def query_gemini(relevant_chunks, query):
         ]
     }
 
-    response = requests.post(f"{url}?key={api_key}", headers=headers, data=json.dumps(payload))
-    return response.json()
+    try:
+        response = requests.post(f"{url}?key={api_key}", headers=headers, data=json.dumps(payload), timeout=60)
+        return response.json(), response.status_code
+    except requests.RequestException as exc:
+        return {'error': {'message': f'Gemini request failed: {exc}'}}, 502
 
 # Routes for file upload and context management
 @app.route('/upload/<context_id>', methods=['POST'])
@@ -254,8 +261,8 @@ def get_response(context_id):
     if not relevant_chunks:
         return jsonify({'error': f'No context found for context ID {context_id}'}), 404
 
-    response = query_gemini(relevant_chunks, query)
-    return jsonify(response), 200
+    response, status_code = query_gemini(relevant_chunks, query)
+    return jsonify(response), status_code
 
 # Generic function to save context
 @app.route('/save/<context_type>/<context_id>', methods=['POST'])
@@ -289,8 +296,8 @@ def query_context(context_type, context_id):
     if not relevant_chunks:
         return jsonify({'error': f'No context found for {context_type} ID {context_id}'}), 404
 
-    response = query_gemini(relevant_chunks, query)
-    return jsonify(response), 200
+    response, status_code = query_gemini(relevant_chunks, query)
+    return jsonify(response), status_code
 
 if __name__ == '__main__':
     app.run(
