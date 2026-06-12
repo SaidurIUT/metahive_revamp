@@ -77,6 +77,7 @@ export default function DocDetailsPage() {
   const [chatResponse, setChatResponse] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
+  const [lastRagContextSignature, setLastRagContextSignature] = useState("");
 
   // Prompt dialog states
   const [selectedText, setSelectedText] = useState<string>("");
@@ -195,6 +196,24 @@ export default function DocDetailsPage() {
     }
   };
 
+  const buildRagContext = () => {
+    const heading = title || doc?.title || "";
+    const body = editor?.getText().trim() || doc?.content || "";
+    return [heading, body].filter(Boolean).join("\n\n");
+  };
+
+  const ensureRagContext = async (contextId: string) => {
+    const context = buildRagContext();
+    const signature = `${contextId}:${context}`;
+
+    if (!context.trim() || signature === lastRagContextSignature) {
+      return;
+    }
+
+    await saveContextToFlask(contextId, context);
+    setLastRagContextSignature(signature);
+  };
+
   // Update the doc in the database and save context
   const handleUpdateDoc = async () => {
     try {
@@ -208,7 +227,9 @@ export default function DocDetailsPage() {
 
       // Save the updated content to Flask backend using grandparentId
       if (grandparentId) {
-        await saveContextToFlask(grandparentId, updatedDoc.content);
+        const context = buildRagContext();
+        await saveContextToFlask(grandparentId, context);
+        setLastRagContextSignature(`${grandparentId}:${context}`);
       } else {
         console.warn("Grandparent ID is not available.");
       }
@@ -280,6 +301,8 @@ export default function DocDetailsPage() {
     setChatResponse("");
 
     try {
+      await ensureRagContext(grandparentId);
+
       const response = await axios.post(
         `${RAG_BASE_URL}/query/${grandparentId}`,
         {

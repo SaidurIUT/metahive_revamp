@@ -124,7 +124,7 @@ def generate_embeddings(chunks):
         embeddings.append(outputs.last_hidden_state.mean(dim=1).detach().numpy())
     return embeddings
 
-def save_to_faiss(context_id, embeddings, chunks):
+def save_to_faiss(context_id, embeddings, chunks, replace=False):
     if not embeddings:
         return
 
@@ -132,7 +132,7 @@ def save_to_faiss(context_id, embeddings, chunks):
     chunks_file = context_file(context_id, "chunks.json")
 
     # Load or create FAISS index
-    if os.path.exists(index_file):
+    if os.path.exists(index_file) and not replace:
         index = faiss.read_index(index_file)
     else:
         index = faiss.IndexFlatL2(embeddings[0].shape[1])
@@ -141,7 +141,7 @@ def save_to_faiss(context_id, embeddings, chunks):
     faiss.write_index(index, index_file)
 
     # Save chunks
-    if os.path.exists(chunks_file):
+    if os.path.exists(chunks_file) and not replace:
         with open(chunks_file, "r") as file:
             existing_chunks = json.load(file)
     else:
@@ -233,7 +233,7 @@ def add_context(context_id):
 
     split_documents = split_document(request_data['context'])
     embeddings = generate_embeddings(split_documents)
-    save_to_faiss(context_id, embeddings, split_documents)
+    save_to_faiss(context_id, embeddings, split_documents, replace=True)
     return jsonify({'status': f'Context added successfully for context ID {context_id}'}), 200
 
 @app.route('/query/<context_id>', methods=['POST'])
@@ -266,7 +266,7 @@ def save_context(context_type, context_id):
 
     split_documents = split_document(request_data['context'])
     embeddings = generate_embeddings(split_documents)
-    save_to_faiss(f"{context_type}_{context_id}", embeddings, split_documents)
+    save_to_faiss(f"{context_type}_{context_id}", embeddings, split_documents, replace=True)
     return jsonify({'status': f'Context added successfully for {context_type} ID {context_id}'}), 200
 
 # Generic function to query context
