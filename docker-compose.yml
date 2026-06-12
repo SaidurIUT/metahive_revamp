@@ -22,7 +22,7 @@ services:
       MYSQL_PASSWORD: metahive_password
     command: --default-authentication-plugin=mysql_native_password
     ports:
-      - "3070:3306"
+      - "${MYSQL_HOST_BIND:-0.0.0.0}:${MYSQL_HOST_PORT:-3070}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
@@ -63,7 +63,7 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
     ports:
-      - "8181:8181"
+      - "${KEYCLOAK_HOST_BIND:-0.0.0.0}:${KEYCLOAK_HOST_PORT:-8181}:8181"
     volumes:
       - ./infra/keycloak/realms:/opt/keycloak/data/import
       - ./infra/keycloak/themes:/opt/keycloak/themes
@@ -85,13 +85,13 @@ services:
       DOCUMENT_SERVICE_URL: http://doc-service:8083
       PROJECT_MANAGER_URL: http://project-manager:9087
       ACTIVITY_TRACKER_URL: http://activity-tracker:8085
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8181/realms/meta
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: ${KEYCLOAK_ISSUER_URI:-http://localhost:8181/realms/meta}
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8181/realms/meta/protocol/openid-connect/certs
       OTEL_TRACES_EXPORTER: none
       OTEL_METRICS_EXPORTER: none
       OTEL_LOGS_EXPORTER: none
     ports:
-      - "9000:9000"
+      - "${API_GATEWAY_HOST_BIND:-0.0.0.0}:${API_GATEWAY_HOST_PORT:-9000}:9000"
     depends_on:
       keycloak:
         condition: service_started
@@ -113,12 +113,12 @@ services:
       target: office-service
     environment:
       <<: *java-env
-      JWT_ISSUER_URL: http://localhost:8181/realms/meta
+      JWT_ISSUER_URL: ${KEYCLOAK_ISSUER_URI:-http://localhost:8181/realms/meta}
       JWT_SECRET: ${JWT_SECRET:-dev-local-secret}
       PROJECT_FILE_PATH: /data/files
       PROJECT_IMAGE: /data/images
     ports:
-      - "8080:8080"
+      - "${OFFICE_SERVICE_HOST_BIND:-0.0.0.0}:${OFFICE_SERVICE_HOST_PORT:-8080}:8080"
     volumes:
       - office_files:/data/files
       - office_images:/data/images
@@ -141,10 +141,10 @@ services:
       KEYCLOAK_RESOURCE: user-service
       KEYCLOAK_ADMIN_USERNAME: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8181/realms/meta
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: ${KEYCLOAK_ISSUER_URI:-http://localhost:8181/realms/meta}
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8181/realms/meta/protocol/openid-connect/certs
     ports:
-      - "8082:8082"
+      - "${USER_SERVICE_HOST_BIND:-0.0.0.0}:${USER_SERVICE_HOST_PORT:-8082}:8082"
     depends_on:
       mysql:
         condition: service_healthy
@@ -164,7 +164,7 @@ services:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
     ports:
-      - "8083:8083"
+      - "${DOC_SERVICE_HOST_BIND:-0.0.0.0}:${DOC_SERVICE_HOST_PORT:-8083}:8083"
     volumes:
       - doc_files:/data/files
     depends_on:
@@ -184,7 +184,7 @@ services:
       <<: *java-env
       SPRING_PROFILES_ACTIVE: default
     ports:
-      - "9087:9087"
+      - "${PROJECT_MANAGER_HOST_BIND:-0.0.0.0}:${PROJECT_MANAGER_HOST_PORT:-9087}:9087"
     depends_on:
       mysql:
         condition: service_healthy
@@ -196,9 +196,9 @@ services:
       context: ./services/backend/multiplayer-map-service
     environment:
       SERVER_PORT: 9502
-      APP_CORS_ALLOWEDORIGINS: http://localhost:3000,http://127.0.0.1:3000
+      APP_CORS_ALLOWEDORIGINS: ${MAP_CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
     ports:
-      - "9502:9502"
+      - "${MAP_SERVICE_HOST_BIND:-0.0.0.0}:${MAP_SERVICE_HOST_PORT:-9502}:9502"
     networks:
       - metahive
 
@@ -212,7 +212,7 @@ services:
       FLASK_HOST: 0.0.0.0
       PORT: 5000
     ports:
-      - "5001:5000"
+      - "${RAG_SERVICE_HOST_BIND:-0.0.0.0}:${RAG_SERVICE_HOST_PORT:-5001}:5000"
     volumes:
       - rag_data:/app/data
       - rag_uploads:/app/uploads
@@ -225,11 +225,11 @@ services:
     environment:
       PORT: 4000
       MONGODB_URI: mongodb://mongo:27017/metahive-discord
-      NEXTJS_FRONTEND_URL: http://localhost:3000
+      NEXTJS_FRONTEND_URL: ${PUBLIC_FRONTEND_URL:-http://localhost:3000}
       DISCORD_TOKEN: ${DISCORD_TOKEN:-}
       DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:-}
     ports:
-      - "4000:4000"
+      - "${DISCORD_BOT_HOST_BIND:-0.0.0.0}:${DISCORD_BOT_HOST_PORT:-4000}:4000"
     depends_on:
       mongo:
         condition: service_started
@@ -241,15 +241,15 @@ services:
       context: ./apps/frontend
     environment:
       NEXT_TELEMETRY_DISABLED: "1"
-      NEXT_PUBLIC_API_BASE_URL: http://localhost:9000
-      NEXT_PUBLIC_KEYCLOAK_URL: http://localhost:8181
+      NEXT_PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-http://localhost:9000}
+      NEXT_PUBLIC_KEYCLOAK_URL: ${PUBLIC_KEYCLOAK_URL:-http://localhost:8181}
       NEXT_PUBLIC_KEYCLOAK_REALM: meta
       NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: metahive
-      NEXT_PUBLIC_MAP_WS_URL: http://localhost:9502/ws
-      NEXT_PUBLIC_BACKEND_URL: http://localhost:4000
-      NEXT_PUBLIC_RAG_BASE_URL: http://localhost:5001
+      NEXT_PUBLIC_MAP_WS_URL: ${PUBLIC_MAP_WS_URL:-http://localhost:9502/ws}
+      NEXT_PUBLIC_BACKEND_URL: ${PUBLIC_DISCORD_BACKEND_URL:-http://localhost:4000}
+      NEXT_PUBLIC_RAG_BASE_URL: ${PUBLIC_RAG_BASE_URL:-http://localhost:5001}
     ports:
-      - "3000:3000"
+      - "${FRONTEND_HOST_BIND:-0.0.0.0}:${FRONTEND_HOST_PORT:-3000}:3000"
     depends_on:
       api-gateway:
         condition: service_started
