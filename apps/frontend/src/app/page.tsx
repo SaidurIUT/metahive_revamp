@@ -218,6 +218,7 @@ export default function Home() {
           src="https://discord.com/widget?id=1326492630585966662&theme=dark"
           width="350"
           height="500"
+          style={{ borderRadius: "5px", overflow: "hidden" }}
           allowTransparency={true}
           frameBorder="0"
           sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
