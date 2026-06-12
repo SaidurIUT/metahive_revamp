@@ -166,6 +166,7 @@ services:
       PROJECT_FILE_PATH: /data/files
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${DOC_SERVICE_DDL_AUTO:-update}
     ports:
       - "${DOC_SERVICE_HOST_BIND:-0.0.0.0}:${DOC_SERVICE_HOST_PORT:-8083}:8083"
     volumes:
