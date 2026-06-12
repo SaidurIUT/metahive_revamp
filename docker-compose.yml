@@ -199,7 +199,7 @@ services:
       context: ./services/backend/multiplayer-map-service
     environment:
       SERVER_PORT: 9502
-      APP_CORS_ALLOWEDORIGINS: ${MAP_CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      APP_CORS_ALLOWED_ORIGINS: ${MAP_CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
     ports:
       - "${MAP_SERVICE_HOST_BIND:-0.0.0.0}:${MAP_SERVICE_HOST_PORT:-9502}:9502"
     networks:
