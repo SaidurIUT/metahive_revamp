@@ -3,13 +3,16 @@ import kaboom from "kaboom";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
+const mapWebSocketUrl =
+  process.env.NEXT_PUBLIC_MAP_WS_URL || "http://localhost:9502/ws";
+
 const Game = ({ playerName }) => {
   const gameCanvasRef = useRef(null);
 
   // Setup WebSocket connection and return a sendPlayerMovement helper
   const setupWebSocket = (username, onPlayerUpdate) => {
     const client = new Client({
-      webSocketFactory: () => new SockJS("http://localhost:9502/ws"),
+      webSocketFactory: () => new SockJS(mapWebSocketUrl),
       reconnectDelay: 5000,
       onConnect: () => {
         console.log("Connected to WebSocket server");
