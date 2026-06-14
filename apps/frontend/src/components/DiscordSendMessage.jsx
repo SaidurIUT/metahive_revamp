@@ -3,7 +3,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "react-hot-toast";
 import { useAuth } from "@/components/auth/AuthProvider"; // Import the useAuth hook
 
 const SendMessage = ({ channelId }) => {

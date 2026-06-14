@@ -3,7 +3,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "react-hot-toast";
 
 const ChannelList = ({ onSelectChannel }) => {
   const [channels, setChannels] = useState([]);

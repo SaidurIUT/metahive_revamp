@@ -21,6 +21,11 @@ export interface UpdateListData {
   boardId: string;
 }
 
+export interface ReorderListData {
+  id: string;
+  order: number;
+}
+
 export const listService = {
   getLists: async (boardId: string): Promise<BoardList[]> => {
     const response = await privateAxios.get(`/pm/v1/lists/board/${boardId}`);
@@ -41,7 +46,7 @@ export const listService = {
     await privateAxios.delete(`/pm/v1/lists/${id}`);
   },
 
-  reorderLists: async (lists: BoardList[]): Promise<void> => {
+  reorderLists: async (lists: ReorderListData[]): Promise<void> => {
     await privateAxios.put("/pm/v1/lists/reorder", lists);
   },
 

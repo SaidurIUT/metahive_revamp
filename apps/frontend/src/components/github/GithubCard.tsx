@@ -5,7 +5,7 @@ import { GitHubProjectItem, GitHubFieldValueNode, GitHubUser } from "@/services/
 import { useTheme } from "next-themes";
 import { colors } from "../cardcolor"; // Reuse your color definitions
 import { motion } from "framer-motion";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // Assuming shadcn/ui Avatar
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; 
 import { IssueOpenedIcon, GitPullRequestIcon, NoteIcon } from '@primer/octicons-react'; // Example icons
 import { Badge } from "@/components/ui/badge";
 interface GitHubCardProps {

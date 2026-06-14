@@ -12,7 +12,7 @@ import {
   FileCode,
   ArrowLeft,
 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "react-hot-toast";
 import axios from "axios";
 import documentFileService from "@/services/documentFileService";
 import type { DocumentFileDTO } from "@/types/DocumentFileDTO";

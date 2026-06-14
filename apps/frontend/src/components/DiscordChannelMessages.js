@@ -6,7 +6,7 @@ import React, { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { useSocket } from "../contexts/DiscordSocketContext";
 import SendMessage from "./DiscordSendMessage";
-import { toast } from "sonner";
+import { toast } from "react-hot-toast";
 
 const ChannelMessages = ({ selectedChannel }) => {
   const { socket, joinChannel, leaveChannel } = useSocket();

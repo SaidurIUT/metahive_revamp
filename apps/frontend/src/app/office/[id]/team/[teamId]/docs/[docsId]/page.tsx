@@ -10,7 +10,7 @@ import { Plus, Settings, Cat } from "lucide-react"; // Imported Chat icon
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TextAlign from "@tiptap/extension-text-align";
-import TextStyle from "@tiptap/extension-text-style";
+import { TextStyle } from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import ListItem from "@tiptap/extension-list-item";
 import FontFamily from "@tiptap/extension-font-family";

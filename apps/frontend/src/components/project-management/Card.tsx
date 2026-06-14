@@ -17,7 +17,7 @@ interface CardProps {
   card: CardType;
   index: number;
   onClick: (cardId: string) => void;
-  officeId: string; // Added office ID prop
+  officeId?: string; // Added office ID prop
 }
 
 export default function Card({ card, index, onClick, officeId }: CardProps) {

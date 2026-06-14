@@ -1,12 +1,12 @@
-/* app/globals.css */
+@import "tailwindcss";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 html,
 body {
-  margin: 0 !important;
-  padding: 0 !important;
+  margin: 0;
+  padding: 0;
   height: 100%;
   width: 100%;
   overflow: hidden;
@@ -71,34 +71,34 @@ body {
 }
 
 .rpv-core__page-layer {
-  background-color: transparent !important;
+  background-color: transparent;
 }
 
 /* PDF viewer toolbar customization */
 .rpv-core__toolbar {
   @apply border-b border-solid;
-  border-color: var(--pdf-border-color) !important;
-  background-color: var(--pdf-toolbar-bg) !important;
+  border-color: var(--pdf-border-color);
+  background-color: var(--pdf-toolbar-bg);
 }
 
 .rpv-core__button {
-  @apply text-current !important;
+  @apply text-current;
 }
 
 .rpv-core__button:hover {
-  @apply bg-opacity-10 bg-current !important;
+  @apply bg-current/10;
 }
 
 .rpv-core__button--selected {
-  @apply bg-opacity-20 bg-current !important;
+  @apply bg-current/20;
 }
 
 /* PDF viewer page customization */
 .rpv-core__page-container {
-  @apply bg-transparent !important;
+  @apply bg-transparent;
 }
 
 .rpv-core__spinner {
-  @apply text-current !important;
+  @apply text-current;
 }
 

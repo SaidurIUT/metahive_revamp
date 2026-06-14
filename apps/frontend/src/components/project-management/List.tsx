@@ -23,7 +23,7 @@ interface ListProps {
   onCardsUpdate: () => void;
   onCardClick: (cardId: string) => void;
   onListDelete?: () => void;
-  officeId: string; // ✅ Added officeId to props
+  officeId?: string; // ✅ Added officeId to props
 }
 
 export default function List({

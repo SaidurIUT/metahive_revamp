@@ -15,11 +15,6 @@ const nextConfig: NextConfig = {
     // unoptimized: true,
   },
 
-  // Skip linting errors during production builds
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-
   // Preserve your custom webpack tweaks
   webpack: (config, { isServer }) => {
     if (!isServer) config.resolve.alias.canvas = false;
@@ -30,6 +25,8 @@ const nextConfig: NextConfig = {
     });
     return config;
   },
+
+  turbopack: {},
 };
 
 export default nextConfig;

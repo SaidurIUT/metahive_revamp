@@ -7,7 +7,7 @@ import Footer from "@/components/basic/footer";
 import styles from "./styles/Layout.module.css";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import ClientProvider from "../components/DiscordClientProvider";
-import { Toaster } from "sonner";
+import { Toaster } from "react-hot-toast";
 
 const inter = Inter({ subsets: ["latin"] });
 

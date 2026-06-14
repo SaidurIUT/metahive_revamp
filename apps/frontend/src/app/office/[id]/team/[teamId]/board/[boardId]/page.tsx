@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type CSSProperties, type FormEvent } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { boardService } from "@/services/project/boardService";
-import { listService, BoardList } from "@/services/project/listService";
+import { listService, BoardList, ReorderListData } from "@/services/project/listService";
 import { cardService } from "@/services/project/cardService";
 import {
   DragDropContext,
@@ -104,7 +104,7 @@ export default function BoardPage() {
   };
 
   // --- Local List/Card Actions (Keep existing logic) ---
-   const handleCreateList = async (e: React.FormEvent) => {
+   const handleCreateList = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!newListTitle.trim() || !boardId) return;
     try {
@@ -137,7 +137,9 @@ export default function BoardPage() {
         setLocalLists(updatedLists); // Optimistic UI update
 
         try {
-            await listService.reorderLists(updatedLists.map((list, index) => ({ id: list.id, order: index })));
+            await listService.reorderLists(
+              updatedLists.map<ReorderListData>((list, index) => ({ id: list.id, order: index }))
+            );
             // No need to reload all data, just confirm success or handle error
         } catch (error) {
             console.error("Error reordering lists:", error);
@@ -299,18 +301,24 @@ export default function BoardPage() {
                     >
                       {localLists.map((list, index) => (
                         <Draggable key={list.id} draggableId={list.id} index={index}>
-                          {(provided) => (
-                            <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-                              <List
-                                list={list}
-                                boardId={boardId}
-                                cards={list.cards || []} // Ensure cards is an array
+                          {(provided) => {
+                            const draggableProps = {
+                              ...provided.draggableProps,
+                              style: provided.draggableProps.style as CSSProperties | undefined,
+                            };
+                            return (
+                              <div ref={provided.innerRef} {...draggableProps} {...provided.dragHandleProps}>
+                                <List
+                                  list={list}
+                                  boardId={boardId}
+                                  cards={list.cards || []} // Ensure cards is an array
                                 onCardsUpdate={loadLocalBoardData}
                                 onCardClick={handleCardClick}
+                                // officeId={list.boardId} 
                                 // Add onListDelete logic if implemented in List component
                               />
                             </div>
-                          )}
+                          )}}
                         </Draggable>
                       ))}
                       {provided.placeholder}
@@ -318,7 +326,7 @@ export default function BoardPage() {
                       {/* Add New List Component/Button */}
                       <div className="flex-shrink-0 w-72">
                          {isAddingList ? (
-                             <form onSubmit={handleCreateList} className="p-2 rounded-lg" style={{ backgroundColor: isDark ? colors.list.dark.background : colors.list.light.background}}>
+                             <form onSubmit={handleCreateList} className="p-2 rounded-lg" style={{ backgroundColor: isDark ? colors.background.dark.start : colors.background.light.start }}>
                                 <input
                                     type="text" value={newListTitle} onChange={(e) => setNewListTitle(e.target.value)}
                                     placeholder="Enter list title..."
