@@ -697,10 +697,12 @@
       "alwaysDisplayInConsole": true,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "http://localhost:3000/*"
+        "http://localhost:3000/*",
+        "https://metahive.astareo.cloud/*"
       ],
       "webOrigins": [
-        "http://localhost:3000"
+        "http://localhost:3000",
+        "https://metahive.astareo.cloud"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -716,7 +718,7 @@
         "oidc.ciba.grant.enabled": "false",
         "client.secret.creation.time": "1736244681",
         "backchannel.logout.session.required": "true",
-        "post.logout.redirect.uris": "http://localhost:3000/",
+        "post.logout.redirect.uris": "http://localhost:3000/##https://metahive.astareo.cloud/*",
         "display.on.consent.screen": "false",
         "oauth2.device.authorization.grant.enabled": "false",
         "backchannel.logout.revoke.offline.tokens": "false"

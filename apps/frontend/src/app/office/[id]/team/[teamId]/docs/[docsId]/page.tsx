@@ -3,10 +3,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import FloatingChatButton from "@/components/aichatbot";
 import { useTheme } from "next-themes";
-import { useParams, notFound, useRouter } from "next/navigation";
-import { Plus, Settings, Cat } from "lucide-react"; // Imported Chat icon
+import { useParams, notFound } from "next/navigation";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TextAlign from "@tiptap/extension-text-align";
@@ -17,7 +15,6 @@ import FontFamily from "@tiptap/extension-font-family";
 import { teamService, Team } from "@/services/office/teamService";
 import docsService from "@/services/docsService";
 import { colors } from "@/components/colors";
-import DocItem from "@/components/doc/DocItem";
 import { DocsDTO } from "@/types/DocsDTO";
 import { ThemeWrapper } from "@/components/basic/theme-wrapper";
 import { MenuBar } from "@/components/ui/editor/menu-bar";
@@ -29,33 +26,84 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 
 import axios from "axios";
 import FloatingChat from "@/components/FloatingChatBot";
 import DocumentFileUpload from "@/components/doc/DocumentFileUploadProps";
 import { RAG_BASE_URL } from "@/services/ragConfig";
+
+interface RagErrorDetails {
+  code?: number;
+  message?: string;
+  status?: string;
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === "object" && value !== null;
+};
+
+const extractRagError = (data: unknown): RagErrorDetails | null => {
+  if (!isRecord(data)) {
+    return null;
+  }
+
+  const source = isRecord(data.error) ? data.error : data;
+  const code = typeof source.code === "number" ? source.code : undefined;
+  const message =
+    typeof source.message === "string" ? source.message : undefined;
+  const status = typeof source.status === "string" ? source.status : undefined;
+
+  if (!code && !message && !status) {
+    return null;
+  }
+
+  return { code, message, status };
+};
+
+const getFriendlyChatError = (
+  errorDetails: RagErrorDetails | null,
+  httpStatus?: number
+) => {
+  const errorCode = errorDetails?.code ?? httpStatus;
+
+  if (errorCode === 503 || errorDetails?.status === "UNAVAILABLE") {
+    return "The AI model is experiencing high demand right now. Please wait a moment and try again.";
+  }
+
+  if (httpStatus && httpStatus >= 500) {
+    return "The AI service is having trouble right now. Please try again in a few moments.";
+  }
+
+  return (
+    errorDetails?.message ||
+    "I couldn't get a response from the assistant. Please try again."
+  );
+};
+
+const getChatErrorMessage = (error: unknown) => {
+  if (axios.isAxiosError(error)) {
+    return getFriendlyChatError(
+      extractRagError(error.response?.data),
+      error.response?.status
+    );
+  }
+
+  return "I couldn't get a response from the assistant. Please try again.";
+};
+
 export default function DocDetailsPage() {
   const { theme } = useTheme();
   const params = useParams();
-  const router = useRouter();
   const apiKeyGemini = "AIzaSyC6WC7v6rYTZmKXe6uLyWo86xSb76vJqY8";
 
-  const officeId = params.id as string;
   const teamId = params.teamId as string;
   const docsId = params.docsId as string;
 
-  // States for team, docs, doc
+  // States for team and doc
   const [team, setTeam] = useState<Team | null>(null);
   const [teamLoading, setTeamLoading] = useState<boolean>(true);
   const [teamError, setTeamError] = useState<string | null>(null);
-
-  const [docs, setDocs] = useState<DocsDTO[]>([]);
-  const [docsLoading, setDocsLoading] = useState<boolean>(true);
-  const [docsError, setDocsError] = useState<string | null>(null);
 
   const [doc, setDoc] = useState<DocsDTO | null>(null);
   const [docLoading, setDocLoading] = useState<boolean>(true);
@@ -63,20 +111,15 @@ export default function DocDetailsPage() {
 
   // Additional states for document logic
   const [title, setTitle] = useState("");
-  const [isAddChildOpen, setIsAddChildOpen] = useState(false);
-  const [newChildDocTitle, setNewChildDocTitle] = useState("");
-  const [newChildDocContent, setNewChildDocContent] = useState("");
-
-  const [leftSidebarOpen, setLeftSidebarOpen] = useState(false);
-  const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
 
   // Chatbot states
   const [grandparentId, setGrandparentId] = useState<string | null>(null);
-  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  const [isChatbotOpen, setIsChatbotOpen] = useState(true);
   const [chatInput, setChatInput] = useState("");
   const [chatResponse, setChatResponse] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
+  const [lastRagContextSignature, setLastRagContextSignature] = useState("");
 
   // Prompt dialog states
   const [selectedText, setSelectedText] = useState<string>("");
@@ -139,23 +182,6 @@ export default function DocDetailsPage() {
     fetchTeam();
   }, [teamId]);
 
-  // Fetch the docs (root docs)
-  useEffect(() => {
-    const fetchDocs = async () => {
-      try {
-        const allDocs = await docsService.getDocsByTeamId(teamId);
-        const rootDocs = allDocs.filter((d) => !d.parentId);
-        setDocs(rootDocs);
-      } catch (err) {
-        console.error(err);
-        setDocsError("Failed to fetch documents.");
-      } finally {
-        setDocsLoading(false);
-      }
-    };
-    fetchDocs();
-  }, [teamId]);
-
   // Fetch the specific doc by ID
   useEffect(() => {
     const fetchDocById = async () => {
@@ -195,6 +221,24 @@ export default function DocDetailsPage() {
     }
   };
 
+  const buildRagContext = () => {
+    const heading = title || doc?.title || "";
+    const body = editor?.getText().trim() || doc?.content || "";
+    return [heading, body].filter(Boolean).join("\n\n");
+  };
+
+  const ensureRagContext = async (contextId: string) => {
+    const context = buildRagContext();
+    const signature = `${contextId}:${context}`;
+
+    if (!context.trim() || signature === lastRagContextSignature) {
+      return;
+    }
+
+    await saveContextToFlask(contextId, context);
+    setLastRagContextSignature(signature);
+  };
+
   // Update the doc in the database and save context
   const handleUpdateDoc = async () => {
     try {
@@ -208,7 +252,9 @@ export default function DocDetailsPage() {
 
       // Save the updated content to Flask backend using grandparentId
       if (grandparentId) {
-        await saveContextToFlask(grandparentId, updatedDoc.content);
+        const context = buildRagContext();
+        await saveContextToFlask(grandparentId, context);
+        setLastRagContextSignature(`${grandparentId}:${context}`);
       } else {
         console.warn("Grandparent ID is not available.");
       }
@@ -217,53 +263,6 @@ export default function DocDetailsPage() {
       alert("Failed to update document.");
     }
   };
-
-  // Create a new child doc
-  const handleCreateChildDoc = async () => {
-    try {
-      const newDoc = await docsService.createDoc({
-        teamId,
-        officeId,
-        parentId: doc?.id || null,
-        title: newChildDocTitle,
-        content: newChildDocContent,
-        level: (doc?.level || 0) + 1,
-      });
-
-      if (doc) {
-        setDoc({
-          ...doc,
-          children: doc.children ? [...doc.children, newDoc] : [newDoc],
-        });
-      }
-
-      setDocs((prevDocs) => {
-        const updatedDocs = prevDocs.map((d) => {
-          if (d.id === newDoc.parentId) {
-            return {
-              ...d,
-              children: d.children ? [...d.children, newDoc] : [newDoc],
-            };
-          }
-          return d;
-        });
-        return updatedDocs;
-      });
-
-      setNewChildDocTitle("");
-      setNewChildDocContent("");
-      setIsAddChildOpen(false);
-
-      router.push(`/office/${officeId}/team/${teamId}/docs/${newDoc.id}`);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to create child document.");
-    }
-  };
-
-  // Toggle sidebars
-  const toggleLeftSidebar = () => setLeftSidebarOpen(!leftSidebarOpen);
-  const toggleRightSidebar = () => setRightSidebarOpen(!rightSidebarOpen);
 
   // Chatbot functions
 
@@ -280,6 +279,8 @@ export default function DocDetailsPage() {
     setChatResponse("");
 
     try {
+      await ensureRagContext(grandparentId);
+
       const response = await axios.post(
         `${RAG_BASE_URL}/query/${grandparentId}`,
         {
@@ -287,39 +288,49 @@ export default function DocDetailsPage() {
         }
       );
 
-      // Assuming the Flask app returns the Gemini API response in a 'candidates' array
-      const geminiResponse = response.data.candidates[0].content.parts[0].text;
+      const apiError = extractRagError(response.data);
+
+      if (apiError) {
+        setChatError(getFriendlyChatError(apiError, response.status));
+        return;
+      }
+
+      const geminiResponse =
+        response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (typeof geminiResponse !== "string" || !geminiResponse.trim()) {
+        setChatError(
+          "The assistant returned an empty response. Please try again."
+        );
+        return;
+      }
+
       setChatResponse(geminiResponse);
     } catch (error) {
       console.error("Error communicating with Flask backend:", error);
-      setChatError("Failed to get response from chatbot.");
+      setChatError(getChatErrorMessage(error));
     } finally {
       setChatLoading(false);
     }
   };
 
-  // Handle adding a new child document from DocItem
-  const handleDocAdded = (newDoc: DocsDTO, parentId: string) => {
-    setDocs((prevDocs) => {
-      if (parentId === null) {
-        return [...prevDocs, newDoc];
-      }
-      const updatedDocs = prevDocs.map((d) => {
-        if (d.id === parentId) {
-          return {
-            ...d,
-            children: d.children ? [...d.children, newDoc] : [newDoc],
-          };
-        }
-        return d;
-      });
-      return updatedDocs;
-    });
+  const isTypingTarget = (target: EventTarget | null) => {
+    if (!(target instanceof HTMLElement)) {
+      return false;
+    }
+
+    return Boolean(
+      target.closest("input, textarea, select, button, [contenteditable='true']")
+    );
   };
 
   // Handle 'U' key for prompt options
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (isTypingTarget(event.target)) {
+        return;
+      }
+
       // Check if user pressed 'U' or 'u'
       if (event.key === "u" || event.key === "U") {
         const selection = window.getSelection()?.toString() || "";
@@ -445,7 +456,11 @@ export default function DocDetailsPage() {
       <div className={styles.container}>
         {/* Left Sidebar Toggle */}
 
-        <div className={styles.content}>
+        <div
+          className={`${styles.content} ${
+            !isChatbotOpen ? styles.chatCollapsed : ""
+          }`}
+        >
           {/* Main Content */}
           <div className={styles.mainContent}>
             <h1 className={styles.title} style={themeTextStyle}>
@@ -496,6 +511,18 @@ export default function DocDetailsPage() {
               </div>
             </div>
           </div>
+
+          <FloatingChat
+            variant="sidebar"
+            isOpen={isChatbotOpen}
+            onOpenChange={setIsChatbotOpen}
+            onSendChat={handleSendChat}
+            chatInput={chatInput}
+            setChatInput={setChatInput}
+            chatResponse={chatResponse}
+            chatLoading={chatLoading}
+            chatError={chatError}
+          />
         </div>
 
         {/* Prompt Dialog for "Rewrite", "Explain", "Summary", "Grammar" */}
@@ -577,14 +604,6 @@ export default function DocDetailsPage() {
         </Dialog>
       </div>
       <DocumentFileUpload docId={docsId}/>
-      <FloatingChat
-        onSendChat={handleSendChat}
-        chatInput={chatInput}
-        setChatInput={setChatInput}
-        chatResponse={chatResponse}
-        chatLoading={chatLoading}
-        chatError={chatError}
-      />
     </ThemeWrapper>
   );
 }

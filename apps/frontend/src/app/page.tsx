@@ -1,12 +1,10 @@
-// file: src/app/page.tsx
-
 "use client";
 
 import Link from "next/link";
 import styles from "./styles/Home.module.css";
 import { colors } from "@/components/colors";
 import { useTheme } from "next-themes";
-import { Globe2, Users, Gamepad2, Boxes } from "lucide-react";
+import { Globe, Gamepad, Gamepad2, Boxes } from 'lucide-react';
 import Image from "next/image";
 
 export default function Home() {
@@ -14,13 +12,13 @@ export default function Home() {
 
   const features = [
     {
-      icon: <Globe2 size={24} />,
+      icon: <Globe size={24} />,
       title: "Virtual Workspace",
       description:
         "Immersive 3D environment that makes remote work feel natural and engaging.",
     },
     {
-      icon: <Users size={24} />,
+      icon: <Gamepad size={24} />,
       title: "Social Integration",
       description:
         "Seamless collaboration tools that foster genuine connections between team members.",
@@ -68,7 +66,7 @@ export default function Home() {
           </p>
           <div className={styles.heroButtons}>
             <Link
-              href="#"
+              href="/office"
               className={`${styles.heroButton} ${styles.primaryButton}`}
               style={{
                 color:
@@ -83,7 +81,7 @@ export default function Home() {
               Get Started
             </Link>
             <Link
-              href="#"
+              href="/about"
               className={`${styles.heroButton} ${styles.secondaryButton}`}
               style={{
                 color: colors.primary[theme === "dark" ? "dark" : "light"],
@@ -91,7 +89,7 @@ export default function Home() {
                   colors.primary[theme === "dark" ? "dark" : "light"],
               }}
             >
-              Watch Demo
+              Learn More
             </Link>
           </div>
         </div>
@@ -175,7 +173,7 @@ export default function Home() {
         </p>
         <div className={styles.ctaButtons}>
           <Link
-            href="#"
+            href="/office"
             className={styles.ctaButton}
             style={{
               color:
@@ -187,10 +185,10 @@ export default function Home() {
               }, ${colors.secondary[theme === "dark" ? "dark" : "light"]})`,
             }}
           >
-            Start Free Trial
+            Enter Your Office
           </Link>
           <Link
-            href="#"
+            href="/about"
             className={styles.ctaButton}
             style={{
               color: colors.primary[theme === "dark" ? "dark" : "light"],
@@ -199,7 +197,7 @@ export default function Home() {
               borderStyle: "solid",
             }}
           >
-            Schedule Demo
+            Meet the Team
           </Link>
         </div>
       </section>
@@ -220,8 +218,7 @@ export default function Home() {
           src="https://discord.com/widget?id=1326492630585966662&theme=dark"
           width="350"
           height="500"
-          allowTransparency={true}
-          frameBorder="0"
+          style={{ borderRadius: "15px", overflow: "hidden" }}
           sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
         ></iframe>
       </div>
