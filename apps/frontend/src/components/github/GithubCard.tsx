@@ -54,8 +54,10 @@ export default function GitHubCard({ item, index }: GitHubCardProps) {
   const assignees = (item.content as any)?.assignees?.nodes;
 
   // Get common field values (adjust field names like "Status" if different in your project)
-  const statusValue = getFieldValue(item, "Status")?.name; // Assuming SingleSelect
-  const priorityValue = getFieldValue(item, "Priority")?.name; // Assuming SingleSelect
+  const statusValue = "N/a"; // Assuming SingleSelect
+  // const statusValue = getFieldValue(item, "Status")?.name || "N/a"; // Assuming SingleSelect
+  // const priorityValue = getFieldValue(item, "Priority")?.name || "N/a"; // Assuming SingleSelect
+  const priorityValue = "N/a"; // Assuming SingleSelect
   // const assigneeField = getFieldValue(item, "Assignees")?.users?.nodes; // If using Assignees field
 
   const getIcon = () => {

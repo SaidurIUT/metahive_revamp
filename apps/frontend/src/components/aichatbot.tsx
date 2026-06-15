@@ -51,10 +51,10 @@ const FloatingChatButton: React.FC<FloatingChatButtonProps> = ({
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-[500px] h-[600px] flex flex-col">
           <DialogHeader>
-            <DialogTitle style={themeTextStyle}>Chat with Bot</DialogTitle>
+            <DialogTitle className={`border ${themeTextStyle.borderColor}`}>Chat with Bot</DialogTitle>
           </DialogHeader>
           
-          <div className="flex-1 overflow-y-auto mb-4 p-4" style={themeInputStyle}>
+          <div className={`flex-1 overflow-y-auto mb-4 p-4 border ${themeTextStyle.borderColor}`}>
             {chatResponse && (
               <div className="bg-secondary/10 rounded-lg p-4 mb-4">
                 <p className="whitespace-pre-wrap">{chatResponse}</p>
@@ -69,9 +69,8 @@ const FloatingChatButton: React.FC<FloatingChatButtonProps> = ({
               placeholder="Type your question here..."
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
-              className="flex-1 resize-none"
               rows={2}
-              style={themeInputStyle}
+              className={`flex-1 resize-none border ${themeTextStyle.borderColor}`}
             />
             <Button 
               onClick={onSendChat}

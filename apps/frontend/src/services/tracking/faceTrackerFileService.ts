@@ -1,6 +1,5 @@
-// File: src/services/faceTrackerFileService.ts
-
 import { privateAxios } from "@/services/axiosConfig";
+import { AxiosHeaders } from "axios";
 
 // Define TypeScript interfaces for File Service
 export interface FileUploadResponse {
@@ -11,7 +10,7 @@ export interface FileUploadResponse {
 
 export interface FileDownloadResponse {
   blob: Blob;
-  contentType: string;
+  contentType: string | number | true | string[] | AxiosHeaders;
 }
 
 export const faceTrackerFileService = {

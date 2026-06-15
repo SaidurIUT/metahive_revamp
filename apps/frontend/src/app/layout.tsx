@@ -1,6 +1,4 @@
-// file: src/app/layout.tsx
 import "./globals.css";
-import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/basic/theme-provider";
 import Header from "@/components/basic/header";
 import Footer from "@/components/basic/footer";
@@ -8,8 +6,14 @@ import styles from "./styles/Layout.module.css";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import ClientProvider from "../components/DiscordClientProvider";
 import { Toaster } from "react-hot-toast";
+import { Geist } from "next/font/google";
 
-const inter = Inter({ subsets: ["latin"] });
+// const inter = Inter({ subsets: ["latin"] });
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
 
 export const metadata = {
   title: "MetaHive",
@@ -23,7 +27,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={geistSans.variable}>
         <ThemeProvider>
           <AuthProvider>
             <ClientProvider>

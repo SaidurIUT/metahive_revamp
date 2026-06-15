@@ -23,15 +23,8 @@ interface TextResponse {
 
 declare global {
   interface Window {
-    ImageCapture?: typeof ImageCapture;
+    ImageCapture?: typeof globalThis.ImageCapture;
   }
-
-  // Changed 'var' to 'const' in the global interface
-  const ImageCapture: {
-    new (track: MediaStreamTrack): {
-      grabFrame(): Promise<ImageBitmap>;
-    };
-  };
 }
 
 const Page: React.FC = () => {
