@@ -37,8 +37,8 @@ export default function Header() {
   const publicNavLinks = [{ href: "/about", label: "About Us" }];
   const authenticatedNavLinks = [
     { href: "/office", label: "Offices" },
-    { href: "/projects", label: "Projects" },
-    { href: "/team", label: "Team" },
+    // { href: "/projects", label: "Projects" },
+    // { href: "/team", label: "Team" },
   ];
   const navLinks = [
     ...publicNavLinks,
