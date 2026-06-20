@@ -1,71 +1,200 @@
 # MetaHive
 
-MetaHive is a multiplayer virtual office platform with a Next.js web app, Spring Boot microservices, a WebSocket map service, Keycloak auth, Discord integration, and a local RAG assistant.
+MetaHive is a distributed multiplayer virtual office platform that combines a modern Next.js frontend, Spring Boot microservices, real-time map collaboration, Keycloak authentication, Discord bridge integration, and a local RAG-based AI assistant.
 
-## Project Layout
+## Project Summary
 
-```text
-apps/
-  frontend/        Next.js client
-  discord-bot/     Express, Socket.IO, Discord backend
-services/
-  backend/         Spring Boot services and multiplayer map service
-  rag-service/     Flask RAG service
-infra/
-  keycloak/        Realm import and custom theme
-docs/              Product and requirement docs
-docker-compose.yml Single local orchestration entry point
+This repository implements a hybrid collaboration workspace where team members can:
+
+- join a shared virtual office
+- manage users, teams, and meetings
+- collaborate on projects, boards, and cards
+- upload and serve documents
+- chat through Discord integration
+- interact with a real-time multiplayer map service
+- use a document-aware AI assistant for file analysis and context search
+
+The system is designed as a distributed application with separate services for user management, office management, document serving, project management, real-time state, authentication, chat integration, and AI-powered assistance.
+
+## Architecture Overview
+
+### Core components
+
+- `apps/frontend` — Next.js client application
+- `apps/discord-bot` — Express + Socket.IO bridge for Discord chat and persistent message storage
+- `services/backend` — Gradle multi-module Spring Boot backend
+  - `api-gateway` — front-door for API traffic and JWT validation
+  - `office-service` — virtual office, teams, meetings, and resources
+  - `user-service` — Keycloak-aware user and identity service
+  - `doc-server` — document upload/download and file management with Redis support
+  - `project-manager` — board/card project collaboration service
+- `services/backend/multiplayer-map-service` — WebSocket-based multiplayer map server
+- `services/rag-service` — Flask service for RAG document ingestion, embeddings, and Gemini-backed query responses
+- `infra/keycloak` — Keycloak realm import, theme, and local authentication configuration
+- `docker-compose.yml` — orchestrates all services with MySQL, Redis, MongoDB, Keycloak, and containers
+
+### Distributed system diagram
+
+```mermaid
+flowchart TB
+  Browser[User Browser]
+  Frontend[Next.js Frontend]
+  Keycloak[Keycloak Auth]
+  APIGateway[API Gateway]
+  OfficeService[Office Service]
+  UserService[User Service]
+  DocService[Document Service]
+  ProjectManager[Project Manager]
+  MapService[Multiplayer Map Service]
+  DiscordBot[Discord Bot Backend]
+  RAGService[RAG / AI Assistant]
+  MySQL[MySQL]
+  Redis[Redis]
+  MongoDB[MongoDB]
+
+  Browser -->|HTTP / SPA| Frontend
+  Browser -->|OAuth / OpenID| Keycloak
+  Frontend -->|API requests| APIGateway
+  APIGateway --> OfficeService
+  APIGateway --> UserService
+  APIGateway --> DocService
+  APIGateway --> ProjectManager
+  Frontend -->|WebSocket| MapService
+  Frontend -->|Socket.IO| DiscordBot
+  DiscordBot -->|Discord API| Discord
+  DiscordBot -->|MongoDB storage| MongoDB
+  RAGService -->|Gemini / LLM| ExternalAI[Gemini API]
+  RAGService -->|FAISS embeddings + files| /data
+  OfficeService -->|MySQL| MySQL
+  UserService -->|MySQL| MySQL
+  DocService -->|MySQL / Redis| MySQL
+  ProjectManager -->|MySQL| MySQL
+  DiscordBot -->|MongoDB| MongoDB
+  DocService -->|Redis cache| Redis
+
+  subgraph DataStores[Databases]
+    MySQL
+    Redis
+    MongoDB
+  end
+
+  subgraph Auth[Identity]
+    Keycloak
+  end
+
+  subgraph Backend[Backend Microservices]
+    APIGateway
+    OfficeService
+    UserService
+    DocService
+    ProjectManager
+    MapService
+    DiscordBot
+    RAGService
+  end
 ```
 
-## Run Everything
+> Note: The frontend is the user-facing entry point. The API Gateway routes requests to dedicated backend services. The map service handles live collaborative state, while the RAG service handles AI context search and file ingestion.
+
+## Functionalities
+
+### 1. Authentication and User Management
+
+- Single sign-on using Keycloak with the `meta` realm
+- Token-based JWT validation by the API gateway
+- User profile and session management in the frontend
+- OAuth / OpenID authentication flow for secure access
+
+### 2. Virtual Office Collaboration
+
+- Office workspace with teams, roles, meetings, and resources
+- Team membership and office-role management
+- Real-time office presence and interaction through the multiplayer map service
+- Document and resource browsing in a shared office environment
+
+### 3. Project and Task Management
+
+- Boards, lists, and cards powered by `project-manager`
+- Task tracking and project collaboration workflows
+- File attachment and document support for projects
+
+### 4. Document Upload and Serving
+
+- `doc-server` exposes APIs for document upload and retrieval
+- Uses Redis caching for faster document operations
+- Supports image and file storage mounted by Docker volumes
+
+### 5. Real-time Chat and Discord Integration
+
+- `discord-bot` backend connects to Discord via bot token
+- Socket.IO socket connectivity from frontend to Discord backend
+- Real-time message publishing and channel room support
+- Persistent chat history stored in MongoDB
+
+### 6. Multiplayer Map Service
+
+- Dedicated WebSocket service for map presence and state
+- Live updates for avatars, location, and collaborative movement
+- Separate service to isolate latency-sensitive state from REST APIs
+
+### 7. Local RAG AI Assistant
+
+- Flask-based `rag-service` for file ingestion and semantic search
+- Extracts text from uploaded PDF, CSV, Excel, zip, and code/text files
+- Builds embeddings with BERT and stores them in FAISS
+- Sends context-aware prompts to Gemini for intelligent responses
+- Supports manual context upload and query endpoints
+
+## Getting Started
+
+### Prerequisites
+
+- Docker
+- Docker Compose
+- Optional: `DISCORD_TOKEN`, `DISCORD_GUILD_ID`, `GEMINI_API_KEY`
+
+### Run locally
 
 ```bash
 cp .env.example .env
 docker compose up --build
 ```
 
-Then open:
+Open the local services:
 
-- App: http://localhost:3000
-- API gateway: http://localhost:9000
-- Keycloak: http://localhost:8181
-- RAG service: http://localhost:5001
-- Discord backend: http://localhost:4000
+- Frontend: `http://localhost:3000`
+- API Gateway: `http://localhost:9000`
+- Keycloak: `http://localhost:8181`
+- RAG Service: `http://localhost:5001`
+- Discord backend: `http://localhost:4000`
 
-The local Keycloak admin user is `admin` / `admin`. The imported realm is `meta`, and the frontend client is `metahive`.
+### Optional environment variables
 
-## Environment
+Add them to `.env` when you want optional integrations:
 
-The root `.env` file is only needed for optional integrations:
+- `DISCORD_TOKEN` — Discord bot token
+- `DISCORD_GUILD_ID` — Discord server ID
+- `GEMINI_API_KEY` — Google Gemini API key
+- `JWT_SECRET` — service JWT secret (default: `dev-local-secret`)
 
-```bash
-DISCORD_TOKEN=
-DISCORD_GUILD_ID=
-GEMINI_API_KEY=
-JWT_SECRET=dev-local-secret
+## Repository Layout
+
+```text
+apps/
+  frontend/        Next.js UI client
+  discord-bot/     Discord chat bridge and Socket.IO backend
+services/
+  backend/         Spring Boot microservice modules and API gateway
+  rag-service/     Flask RAG assistant service
+infra/
+  keycloak/        Keycloak realm and custom theme
+docs/              Product and requirement documentation
 ```
 
-The Compose file already injects the local frontend URLs:
+## Notes
 
-```bash
-NEXT_PUBLIC_API_BASE_URL=http://localhost:9000
-NEXT_PUBLIC_KEYCLOAK_URL=http://localhost:8181
-NEXT_PUBLIC_KEYCLOAK_REALM=meta
-NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=metahive
-NEXT_PUBLIC_MAP_WS_URL=http://localhost:9502/ws
-NEXT_PUBLIC_BACKEND_URL=http://localhost:4000
-NEXT_PUBLIC_RAG_BASE_URL=http://localhost:5001
-```
+- `services/backend/Dockerfile` builds all Spring Boot modules in one multi-stage pipeline
+- The frontend uses `NEXT_PUBLIC_*` environment variables configured by Compose
+- `docker compose down -v` removes persistent data volumes for MySQL, Redis, MongoDB, uploaded files, and RAG index state
 
-RAG is exposed on host port `5001` because macOS often keeps port `5000` occupied. Inside Docker it still runs on port `5000`.
-
-## Useful Commands
-
-```bash
-docker compose ps
-docker compose logs -f frontend api-gateway
-docker compose down
-docker compose down -v
-```
-
-Use `docker compose down -v` only when you intentionally want to reset local MySQL, Redis, Mongo, uploaded files, and RAG index data.
+If you want, I can also expand this README with a “developer setup” and service-specific API references.
