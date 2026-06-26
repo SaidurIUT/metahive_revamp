@@ -3,6 +3,7 @@ import json
 import faiss
 import numpy as np
 from nltk.tokenize import sent_tokenize
+import nltk
 from transformers import BertTokenizer, BertModel
 from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
@@ -11,15 +12,22 @@ from flask_cors import CORS
 import requests
 import pandas as pd
 import zipfile
-import fitz  # PyMuPDF for PDF processing
+# import fitz  # PyMuPDF for PDF processing
+import pypdf
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 load_dotenv()
 
-api_key = os.getenv('GEMINI_API_KEY') or os.getenv('gemini_api_key')
-gemini_model = os.getenv('GEMINI_MODEL', 'gemini-3.5-flash')
-url = f"https://generativelanguage.googleapis.com/v1beta/models/{gemini_model}:generateContent"
+# Download NLTK tokenizer data
+try:
+    nltk.data.find('tokenizers/punkt_tab')
+except LookupError:
+    nltk.download('punkt_tab')
+
+# Llama/Ollama configuration
+llama_api_url = os.getenv('LLAMA_API_URL', 'http://localhost:11434/api/generate')
+llama_model = os.getenv('LLAMA_MODEL', 'llama2')
 
 app = Flask(__name__)
 CORS(app)
@@ -40,9 +48,9 @@ def allowed_file(filename):
 
 def extract_text_from_pdf(file_path):
     text = ""
-    with fitz.open(file_path) as pdf:
-        for page in pdf:
-            text += page.get_text()
+    with pypdf.PdfReader(file_path) as pdf:
+        for page in pdf.pages:
+            text += page.extract_text()
     return text
 
 def extract_text_from_csv(file_path):
@@ -176,23 +184,25 @@ def embed_query(query):
     outputs = model(**inputs)
     return outputs.last_hidden_state.mean(dim=1).detach().numpy()
 
-def query_gemini(relevant_chunks, query):
-    if not api_key:
-        return {'error': {'message': 'GEMINI_API_KEY is not configured'}}, 500
-
-    prompt = f"Context:\n{' '.join(relevant_chunks)}\n\nQuestion: {query}"
+def query_llama(relevant_chunks, query):
+    prompt = f"Context:\n{' '.join(relevant_chunks)}\n\nQuestion: {query}\n\nAnswer:"
     headers = {"Content-Type": "application/json"}
     payload = {
-        "contents": [
-            {"parts": [{"text": prompt}]}
-        ]
+        "model": llama_model,
+        "prompt": prompt,
+        "stream": False,
+        "temperature": 0.7
     }
 
     try:
-        response = requests.post(f"{url}?key={api_key}", headers=headers, data=json.dumps(payload), timeout=60)
-        return response.json(), response.status_code
+        response = requests.post(llama_api_url, headers=headers, data=json.dumps(payload), timeout=120)
+        if response.status_code == 200:
+            result = response.json()
+            return {'response': result.get('response', '')}, 200
+        else:
+            return {'error': {'message': f'Llama request failed with status {response.status_code}'}}, response.status_code
     except requests.RequestException as exc:
-        return {'error': {'message': f'Gemini request failed: {exc}'}}, 502
+        return {'error': {'message': f'Llama request failed: {exc}'}}, 502
 
 # Routes for file upload and context management
 @app.route('/upload/<context_id>', methods=['POST'])
@@ -261,7 +271,7 @@ def get_response(context_id):
     if not relevant_chunks:
         return jsonify({'error': f'No context found for context ID {context_id}'}), 404
 
-    response, status_code = query_gemini(relevant_chunks, query)
+    response, status_code = query_llama(relevant_chunks, query)
     return jsonify(response), status_code
 
 # Generic function to save context
@@ -275,6 +285,12 @@ def save_context(context_type, context_id):
     embeddings = generate_embeddings(split_documents)
     save_to_faiss(f"{context_type}_{context_id}", embeddings, split_documents, replace=True)
     return jsonify({'status': f'Context added successfully for {context_type} ID {context_id}'}), 200
+
+
+@app.route('/', methods=['GET'])
+def home():
+    return jsonify({'message': 'Welcome to the RAG Service'}), 200
+
 
 # Generic function to query context
 @app.route('/query/<context_type>/<context_id>', methods=['POST'])
@@ -296,7 +312,7 @@ def query_context(context_type, context_id):
     if not relevant_chunks:
         return jsonify({'error': f'No context found for {context_type} ID {context_id}'}), 404
 
-    response, status_code = query_gemini(relevant_chunks, query)
+    response, status_code = query_llama(relevant_chunks, query)
     return jsonify(response), status_code
 
 if __name__ == '__main__':
