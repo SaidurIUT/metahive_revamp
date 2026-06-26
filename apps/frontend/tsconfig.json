@@ -36,11 +36,10 @@
     "src/services/WebSocketService.js",
     "src/components/AgoraCall.js",
     "src/components/Chatbox.js",
-    "src/components/GameCanvas.js",
     "src/components/VideoCall.js",
     "src/components/BanglishSpeechToText.jsx",
     ".next/dev/types/**/*.ts"
-  ],
+, "src/components/GameCanvas.tsx"  ],
   "exclude": [
     "node_modules"
   ]
