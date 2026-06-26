@@ -8,8 +8,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     TRANSFORMERS_CACHE=/models/transformers
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt \
-    && python -m nltk.downloader punkt punkt_tab
+RUN pip install --no-cache-dir -r requirements.txt
+    # && python -m nltk.downloader punkt punkt_tab
 
 COPY . .
 RUN mkdir -p /app/uploads /app/data

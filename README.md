@@ -29,7 +29,7 @@ The system is designed as a distributed application with separate services for u
   - `doc-server` — document upload/download and file management with Redis support
   - `project-manager` — board/card project collaboration service
 - `services/backend/multiplayer-map-service` — WebSocket-based multiplayer map server
-- `services/rag-service` — Flask service for RAG document ingestion, embeddings, and Gemini-backed query responses
+- `services/rag-service` — Flask service for RAG document ingestion, embeddings, and Ollama-backed query responses
 - `infra/keycloak` — Keycloak realm import, theme, and local authentication configuration
 - `docker-compose.yml` — orchestrates all services with MySQL, Redis, MongoDB, Keycloak, and containers
 
@@ -63,7 +63,7 @@ flowchart TB
   Frontend -->|Socket.IO| DiscordBot
   DiscordBot -->|Discord API| Discord
   DiscordBot -->|MongoDB storage| MongoDB
-  RAGService -->|Gemini / LLM| ExternalAI[Gemini API]
+  RAGService -->|Ollama / LLM| ExternalAI[Ollama API]
   RAGService -->|FAISS embeddings + files| /data
   OfficeService -->|MySQL| MySQL
   UserService -->|MySQL| MySQL
@@ -142,7 +142,7 @@ flowchart TB
 - Flask-based `rag-service` for file ingestion and semantic search
 - Extracts text from uploaded PDF, CSV, Excel, zip, and code/text files
 - Builds embeddings with BERT and stores them in FAISS
-- Sends context-aware prompts to Gemini for intelligent responses
+- Sends context-aware prompts to an Ollama model for intelligent responses
 - Supports manual context upload and query endpoints
 
 ## Getting Started
@@ -151,7 +151,7 @@ flowchart TB
 
 - Docker
 - Docker Compose
-- Optional: `DISCORD_TOKEN`, `DISCORD_GUILD_ID`, `GEMINI_API_KEY`
+- Optional: `DISCORD_TOKEN`, `DISCORD_GUILD_ID`, `LLAMA_API_URL`, `LLAMA_MODEL`
 
 ### Run locally
 
@@ -174,7 +174,8 @@ Add them to `.env` when you want optional integrations:
 
 - `DISCORD_TOKEN` — Discord bot token
 - `DISCORD_GUILD_ID` — Discord server ID
-- `GEMINI_API_KEY` — Google Gemini API key
+- `LLAMA_API_URL` — Ollama generate endpoint, for example `http://host.docker.internal:11434/api/generate`
+- `LLAMA_MODEL` — Ollama model name, for example `llama2`
 - `JWT_SECRET` — service JWT secret (default: `dev-local-secret`)
 
 ## Repository Layout

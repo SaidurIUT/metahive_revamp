@@ -210,12 +210,14 @@ services:
     build:
       context: ./services/rag-service
     environment:
-      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash}
+      LLAMA_API_URL: ${LLAMA_API_URL:-http://host.docker.internal:11434/api/generate}
+      LLAMA_MODEL: ${LLAMA_MODEL:-llama2}
       RAG_DATA_DIR: /app/data
       RAG_UPLOAD_DIR: /app/uploads
       FLASK_HOST: 0.0.0.0
       PORT: 5000
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "${RAG_SERVICE_HOST_BIND:-0.0.0.0}:${RAG_SERVICE_HOST_PORT:-5001}:5000"
     volumes:
