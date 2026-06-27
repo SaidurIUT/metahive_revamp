@@ -1,8 +1,14 @@
 # MetaHive
+
 [Demo Video Link](https://www.youtube.com/watch?v=-DZj-FH7PyY)
-[https://metahive.astareo.cloud/](https://metahive.astareo.cloud)
+
 
 MetaHive is a distributed multiplayer virtual office platform that combines a modern Next.js frontend, Spring Boot microservices, real-time map collaboration, Keycloak authentication, Discord bridge integration, and a local RAG-based AI assistant.
+
+
+<p align="center">
+  <img src="./apps/frontend/public/mainmap.png" width="100%" alt="MetaHive Virtual Office"/>
+</p>
 
 ## Project Summary
 
@@ -116,6 +122,12 @@ flowchart TB
 
 ### 3. Project and Task Management
 
+
+<p align="center">
+  <img src="./apps/frontend/public/boards.png" width="48%" alt="Project Management"/>
+  <img src="./apps/frontend/public/discord_service.png" width="48%" alt="Discord Integration"/>
+</p>
+
 - Boards, lists, and cards powered by `project-manager`
 - Task tracking and project collaboration workflows
 - File attachment and document support for projects
@@ -143,9 +155,10 @@ flowchart TB
 
 - Flask-based `rag-service` for file ingestion and semantic search
 - Extracts text from uploaded PDF, CSV, Excel, zip, and code/text files
-- Builds embeddings with BERT and stores them in FAISS
+- Builds embeddings with BERT and stores them in FAISS 
 - Sends context-aware prompts to Gemini for intelligent responses
 - Supports manual context upload and query endpoints
+
 
 ## Getting Started
 
