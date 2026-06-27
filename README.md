@@ -1,4 +1,5 @@
-# MetaHive 
+# MetaHive
+[Demo Video Link](https://www.youtube.com/watch?v=-DZj-FH7PyY)
 [https://metahive.astareo.cloud/](https://metahive.astareo.cloud)
 
 MetaHive is a distributed multiplayer virtual office platform that combines a modern Next.js frontend, Spring Boot microservices, real-time map collaboration, Keycloak authentication, Discord bridge integration, and a local RAG-based AI assistant.
